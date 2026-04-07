@@ -66,7 +66,7 @@ function EditorContent() {
           type: workType,
           category,
           frames_data: framesData,
-          content_url: '', // Would be set after uploading canvas data
+          content_url: '',
           is_published: true,
         })
         .select()

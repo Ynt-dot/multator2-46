@@ -94,6 +94,29 @@ function EmptyContent({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+function EmptyIcon({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="empty-icon"
+      className={cn(
+        'flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground mb-2 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function EmptyAction({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="empty-action"
+      className={cn('flex items-center gap-2', className)}
+      {...props}
+    />
+  )
+}
+
 export {
   Empty,
   EmptyHeader,
@@ -101,4 +124,6 @@ export {
   EmptyDescription,
   EmptyContent,
   EmptyMedia,
+  EmptyIcon,
+  EmptyAction,
 }

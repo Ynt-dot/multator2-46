@@ -11,12 +11,13 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
-import { UserPlus, UserMinus, Settings, Calendar, Heart, Image as ImageIcon } from 'lucide-react'
+import { UserPlus, UserMinus, Settings, Calendar, Heart, Image as ImageIcon, Trophy } from 'lucide-react'
 import { format } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
-import type { Profile, Work } from '@/lib/types'
+import type { Profile, Work, UserAchievement } from '@/lib/types'
 import { getRankInfo } from '@/lib/types'
 import Link from 'next/link'
 
@@ -30,6 +31,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [works, setWorks] = useState<Work[]>([])
   const [favorites, setFavorites] = useState<Work[]>([])
+  const [achievements, setAchievements] = useState<UserAchievement[]>([])
   const [loading, setLoading] = useState(true)
   const [isFollowing, setIsFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(0)
@@ -82,6 +84,14 @@ export default function ProfilePage() {
 
       const favoriteWorks = favoritesData?.map(f => f.work).filter(Boolean) as Work[] || []
       setFavorites(favoriteWorks)
+
+      // Fetch achievements
+      const { data: achievementsData } = await supabase
+        .from('user_achievements')
+        .select('*, achievement:achievement_definitions(*)')
+        .eq('user_id', profileData.id)
+        .order('earned_at', { ascending: false })
+      setAchievements(achievementsData as UserAchievement[] || [])
 
       // Fetch follower counts
       const { count: followers } = await supabase
@@ -176,7 +186,7 @@ export default function ProfilePage() {
   }
 
   const rankInfo = getRankInfo(profile.rank, locale)
-  const roleLabel = profile.role === 'animator' ? t.auth.animator : t.auth.archaeologist
+  const roleLabel = profile.user_type === 'animator' ? t.auth.animator : t.auth.archaeologist
 
   return (
     <div className="min-h-screen bg-background">
@@ -278,6 +288,10 @@ export default function ProfilePage() {
                 <Heart className="h-4 w-4" />
                 {t.profile.favorites} ({favorites.length})
               </TabsTrigger>
+              <TabsTrigger value="achievements" className="gap-2">
+                <Trophy className="h-4 w-4" />
+                {t.profile.achievements} ({achievements.length})
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="works" className="mt-6">
               <WorkGrid
@@ -290,6 +304,38 @@ export default function ProfilePage() {
                 works={favorites}
                 emptyMessage={locale === 'ru' ? 'Нет избранных работ' : 'No favorite works'}
               />
+            </TabsContent>
+            <TabsContent value="achievements" className="mt-6">
+              {achievements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>{t.achievements.noAchievements}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {achievements.map((ua: UserAchievement) => (
+                    <Card key={ua.id}>
+                      <CardContent className="flex items-center gap-3 p-4">
+                        <span className="text-3xl">{ua.achievement?.icon ?? '🏅'}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">
+                            {locale === 'ru' ? ua.achievement?.name_ru : ua.achievement?.name_en}
+                          </p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {locale === 'ru' ? ua.achievement?.description_ru : ua.achievement?.description_en}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t.achievements.earnedAt}: {format(new Date(ua.earned_at), 'd MMM yyyy', { locale: dateLocale })}
+                          </p>
+                        </div>
+                        {(ua.achievement?.gold_reward ?? 0) > 0 && (
+                          <span className="text-sm text-yellow-600 shrink-0">+{ua.achievement?.gold_reward}✦</span>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

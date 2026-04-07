@@ -27,14 +27,14 @@ export default function HallOfFamePage() {
       const { data: animatorsData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'animator')
+        .eq('user_type', 'animator')
         .order('total_likes', { ascending: false })
         .limit(10)
 
       const { data: archaeologistsData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'archaeologist')
+        .eq('user_type', 'archaeologist')
         .order('total_likes', { ascending: false })
         .limit(10)
 

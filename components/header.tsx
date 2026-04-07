@@ -27,6 +27,9 @@ import {
   Moon,
   Globe,
   Trophy,
+  Shield,
+  ShieldCheck,
+  Coins,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
@@ -44,12 +47,15 @@ export function Header() {
     { name: t.nav.oldschool, href: '/oldschool' },
     { name: t.nav.sandbox, href: '/sandbox' },
     { name: t.nav.hallOfFame, href: '/hall-of-fame' },
+    { name: locale === 'ru' ? 'Темы' : 'Themes', href: '/themes' },
   ]
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
     return pathname.startsWith(href)
   }
+
+  const isModOrAdmin = profile && ['admin', 'moderator'].includes(profile.role)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -113,6 +119,15 @@ export function Header() {
 
           {user && profile ? (
             <>
+              {/* Gold balance */}
+              <Link
+                href="/settings"
+                className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium text-yellow-600 hover:bg-yellow-500/10 transition-colors"
+              >
+                <Coins className="h-3.5 w-3.5" />
+                {profile.gold}
+              </Link>
+
               {/* Notifications */}
               <Button variant="ghost" size="icon" asChild>
                 <Link href="/notifications">
@@ -120,6 +135,15 @@ export function Header() {
                   <span className="sr-only">{t.notifications.title}</span>
                 </Link>
               </Button>
+
+              {/* Moderation link for mods/admins */}
+              {isModOrAdmin && (
+                <Button variant="ghost" size="icon" asChild title={locale === 'ru' ? 'Модерация' : 'Moderation'}>
+                  <Link href="/moderation">
+                    <ShieldCheck className="h-4 w-4 text-blue-500" />
+                  </Link>
+                </Button>
+              )}
 
               {/* User menu */}
               <DropdownMenu>
@@ -135,11 +159,17 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
-                    <div className="flex flex-col space-y-1">
+                    <div className="flex flex-col space-y-1 flex-1">
                       <p className="text-sm font-medium leading-none">{profile.display_name || profile.username}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {getRankInfo(profile.rank, locale).name}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          {getRankInfo(profile.rank, locale).name}
+                        </p>
+                        <p className="text-xs text-yellow-600 flex items-center gap-1">
+                          <Coins className="h-3 w-3" />
+                          {profile.gold}
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
@@ -155,6 +185,30 @@ export function Header() {
                       {t.nav.settings}
                     </Link>
                   </DropdownMenuItem>
+                  {profile.role === 'moderator' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/moderation">
+                        <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
+                        {locale === 'ru' ? 'Модерация' : 'Moderation'}
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {profile.role === 'admin' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link href="/moderation">
+                          <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />
+                          {locale === 'ru' ? 'Модерация' : 'Moderation'}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">
+                          <Shield className="mr-2 h-4 w-4 text-red-500" />
+                          {locale === 'ru' ? 'Администрирование' : 'Admin panel'}
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -199,15 +253,41 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
-                {user && (
-                  <Link
-                    href="/editor"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground"
-                  >
-                    <Plus className="h-4 w-4 inline mr-2" />
-                    {t.common.create}
-                  </Link>
+                {user && profile && (
+                  <>
+                    <div className="px-3 py-2 text-sm text-yellow-600 flex items-center gap-2">
+                      <Coins className="h-4 w-4" />
+                      {profile.gold} {locale === 'ru' ? 'золота' : 'gold'}
+                    </div>
+                    <Link
+                      href="/editor"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground"
+                    >
+                      <Plus className="h-4 w-4 inline mr-2" />
+                      {t.common.create}
+                    </Link>
+                    {isModOrAdmin && (
+                      <Link
+                        href="/moderation"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-500/10"
+                      >
+                        <ShieldCheck className="h-4 w-4 inline mr-2" />
+                        {locale === 'ru' ? 'Модерация' : 'Moderation'}
+                      </Link>
+                    )}
+                    {profile.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2 text-sm font-medium rounded-md text-red-600 hover:bg-red-500/10"
+                      >
+                        <Shield className="h-4 w-4 inline mr-2" />
+                        {locale === 'ru' ? 'Администрирование' : 'Admin'}
+                      </Link>
+                    )}
+                  </>
                 )}
                 {!user && (
                   <>

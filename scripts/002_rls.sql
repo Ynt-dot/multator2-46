@@ -25,7 +25,7 @@ CREATE POLICY "profiles_delete_own" ON public.profiles
 
 -- Works policies
 CREATE POLICY "works_select_public" ON public.works
-  FOR SELECT USING (is_public = true OR auth.uid() = user_id);
+  FOR SELECT USING (is_published = true OR auth.uid() = user_id);
 
 CREATE POLICY "works_insert_own" ON public.works
   FOR INSERT WITH CHECK (auth.uid() = user_id);

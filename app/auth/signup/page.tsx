@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import type { UserRole } from '@/lib/types'
+import type { UserType } from '@/lib/types'
 
 export default function SignupPage() {
   const { t } = useTranslation()
@@ -22,7 +22,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [username, setUsername] = useState('')
-  const [role, setRole] = useState<UserRole>('animator')
+  const [userType, setUserType] = useState<UserType>('animator')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -52,7 +52,7 @@ export default function SignupPage() {
           `${window.location.origin}/auth/callback`,
         data: {
           username,
-          role,
+          user_type: userType,
         },
       },
     })
@@ -131,7 +131,7 @@ export default function SignupPage() {
               </Field>
               <Field>
                 <FieldLabel>{t.auth.selectRole}</FieldLabel>
-                <RadioGroup value={role} onValueChange={(v) => setRole(v as UserRole)} className="mt-2">
+                <RadioGroup value={userType} onValueChange={(v: string) => setUserType(v as UserType)} className="mt-2">
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
                     <RadioGroupItem value="animator" id="animator" className="mt-1" />
                     <div className="flex-1">

@@ -1,6 +1,5 @@
 export const translations = {
   ru: {
-    // Common
     common: {
       loading: 'Загрузка...',
       error: 'Ошибка',
@@ -16,11 +15,11 @@ export const translations = {
       next: 'Далее',
       submit: 'Отправить',
     },
-    // Navigation
     nav: {
       home: 'Главная',
       oldschool: 'Олдскул',
       sandbox: 'Песочница',
+      themes: 'Темы',
       editor: 'Редактор',
       profile: 'Профиль',
       settings: 'Настройки',
@@ -28,8 +27,9 @@ export const translations = {
       login: 'Войти',
       logout: 'Выйти',
       signup: 'Регистрация',
+      moderation: 'Модерация',
+      admin: 'Администрирование',
     },
-    // Auth
     auth: {
       login: 'Вход',
       signup: 'Регистрация',
@@ -47,14 +47,14 @@ export const translations = {
       signupError: 'Ошибка при регистрации',
       selectRole: 'Выберите свою роль',
       animator: 'Аниматор',
-      animatorDesc: 'Создаю свои работы и делюсь ими',
+      animatorDesc: 'Создаю качественные анимации и рисунки, делюсь ими',
       archaeologist: 'Археолог',
-      archaeologistDesc: 'Сохраняю и восстанавливаю старые работы',
+      archaeologistDesc: 'Рисую для себя, пробую новое, исследую платформу',
     },
-    // Profile
     profile: {
       works: 'Работы',
       favorites: 'Избранное',
+      achievements: 'Достижения',
       followers: 'Подписчики',
       following: 'Подписки',
       follow: 'Подписаться',
@@ -64,8 +64,9 @@ export const translations = {
       rank: 'Ранг',
       totalLikes: 'Всего лайков',
       joined: 'На сайте с',
+      gold: 'Золото',
+      premium: 'Премиум',
     },
-    // Works
     works: {
       title: 'Название',
       description: 'Описание',
@@ -91,7 +92,6 @@ export const translations = {
         following: 'От подписок',
       },
     },
-    // Editor
     editor: {
       newWork: 'Новая работа',
       tools: {
@@ -125,7 +125,6 @@ export const translations = {
       brushSize: 'Размер кисти',
       opacity: 'Прозрачность',
     },
-    // Comments
     comments: {
       title: 'Комментарии',
       placeholder: 'Напишите комментарий...',
@@ -133,7 +132,6 @@ export const translations = {
       noComments: 'Пока нет комментариев',
       beFirst: 'Будьте первым!',
     },
-    // Hall of Fame
     hallOfFame: {
       title: 'Зал славы',
       topAnimators: 'Лучшие аниматоры',
@@ -141,25 +139,50 @@ export const translations = {
       allTime: 'За всё время',
       thisMonth: 'За месяц',
       thisWeek: 'За неделю',
+      mostLikes: 'Лайки',
+      mostWorks: 'Работы',
+      mostComments: 'Комментарии',
     },
-    // Daily theme
     dailyTheme: {
       title: 'Тема дня',
       participate: 'Участвовать',
+      suggest: 'Предложить тему',
+      noTheme: 'Сегодня нет темы дня',
+      pastThemes: 'Прошлые темы',
+      drawOnTheme: 'Нарисовать на тему',
     },
-    // Notifications
     notifications: {
       title: 'Уведомления',
       liked: 'оценил вашу работу',
       commented: 'прокомментировал вашу работу',
       followed: 'подписался на вас',
       mentioned: 'упомянул вас',
+      gaveMedal: 'дал медаль вашей работе',
+      earnedAchievement: 'вы получили достижение',
       markAllRead: 'Отметить все как прочитанные',
       noNotifications: 'Нет уведомлений',
     },
+    achievements: {
+      title: 'Достижения',
+      noAchievements: 'Пока нет достижений',
+      earnedAt: 'Получено',
+      goldReward: 'Награда',
+    },
+    gold: {
+      title: 'Золото',
+      balance: 'Баланс',
+      topUp: 'Пополнить',
+      spend: 'Потратить',
+      history: 'История транзакций',
+      dailyBonus: 'Ежедневный бонус',
+      featuredSpot: 'Козырное место',
+      soundAttach: 'Прикрепить звук',
+      download: 'Скачать работу',
+      suggestTheme: 'Предложить тему',
+      giveMedal: 'Дать медаль',
+    },
   },
   en: {
-    // Common
     common: {
       loading: 'Loading...',
       error: 'Error',
@@ -175,11 +198,11 @@ export const translations = {
       next: 'Next',
       submit: 'Submit',
     },
-    // Navigation
     nav: {
       home: 'Home',
       oldschool: 'Oldschool',
       sandbox: 'Sandbox',
+      themes: 'Themes',
       editor: 'Editor',
       profile: 'Profile',
       settings: 'Settings',
@@ -187,8 +210,9 @@ export const translations = {
       login: 'Login',
       logout: 'Logout',
       signup: 'Sign Up',
+      moderation: 'Moderation',
+      admin: 'Admin Panel',
     },
-    // Auth
     auth: {
       login: 'Login',
       signup: 'Sign Up',
@@ -206,14 +230,14 @@ export const translations = {
       signupError: 'Registration error',
       selectRole: 'Select your role',
       animator: 'Animator',
-      animatorDesc: 'I create my own works and share them',
+      animatorDesc: 'I create quality animations and drawings and share them',
       archaeologist: 'Archaeologist',
-      archaeologistDesc: 'I preserve and restore old works',
+      archaeologistDesc: 'I draw for fun, try new things, explore the platform',
     },
-    // Profile
     profile: {
       works: 'Works',
       favorites: 'Favorites',
+      achievements: 'Achievements',
       followers: 'Followers',
       following: 'Following',
       follow: 'Follow',
@@ -223,8 +247,9 @@ export const translations = {
       rank: 'Rank',
       totalLikes: 'Total likes',
       joined: 'Joined',
+      gold: 'Gold',
+      premium: 'Premium',
     },
-    // Works
     works: {
       title: 'Title',
       description: 'Description',
@@ -250,7 +275,6 @@ export const translations = {
         following: 'Following',
       },
     },
-    // Editor
     editor: {
       newWork: 'New Work',
       tools: {
@@ -284,7 +308,6 @@ export const translations = {
       brushSize: 'Brush Size',
       opacity: 'Opacity',
     },
-    // Comments
     comments: {
       title: 'Comments',
       placeholder: 'Write a comment...',
@@ -292,7 +315,6 @@ export const translations = {
       noComments: 'No comments yet',
       beFirst: 'Be the first!',
     },
-    // Hall of Fame
     hallOfFame: {
       title: 'Hall of Fame',
       topAnimators: 'Top Animators',
@@ -300,21 +322,47 @@ export const translations = {
       allTime: 'All Time',
       thisMonth: 'This Month',
       thisWeek: 'This Week',
+      mostLikes: 'Likes',
+      mostWorks: 'Works',
+      mostComments: 'Comments',
     },
-    // Daily theme
     dailyTheme: {
       title: 'Daily Theme',
       participate: 'Participate',
+      suggest: 'Suggest a theme',
+      noTheme: 'No theme today',
+      pastThemes: 'Past themes',
+      drawOnTheme: 'Draw on this theme',
     },
-    // Notifications
     notifications: {
       title: 'Notifications',
       liked: 'liked your work',
       commented: 'commented on your work',
       followed: 'followed you',
       mentioned: 'mentioned you',
+      gaveMedal: 'gave a medal to your work',
+      earnedAchievement: 'you earned an achievement',
       markAllRead: 'Mark all as read',
       noNotifications: 'No notifications',
+    },
+    achievements: {
+      title: 'Achievements',
+      noAchievements: 'No achievements yet',
+      earnedAt: 'Earned',
+      goldReward: 'Reward',
+    },
+    gold: {
+      title: 'Gold',
+      balance: 'Balance',
+      topUp: 'Top up',
+      spend: 'Spend',
+      history: 'Transaction history',
+      dailyBonus: 'Daily bonus',
+      featuredSpot: 'Featured spot',
+      soundAttach: 'Attach sound',
+      download: 'Download work',
+      suggestTheme: 'Suggest theme',
+      giveMedal: 'Give medal',
     },
   },
 } as const
