@@ -19,6 +19,12 @@ CREATE INDEX IF NOT EXISTS idx_feedback_status ON public.feedback(status);
 -- Enable RLS
 ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "feedback_select_own" ON public.feedback;
+DROP POLICY IF EXISTS "feedback_insert_own" ON public.feedback;
+DROP POLICY IF EXISTS "feedback_select_admin" ON public.feedback;
+DROP POLICY IF EXISTS "feedback_update_admin" ON public.feedback;
+
 -- Users can only see their own feedback
 CREATE POLICY "feedback_select_own" ON public.feedback
   FOR SELECT USING (auth.uid() = user_id);
