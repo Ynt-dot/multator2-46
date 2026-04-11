@@ -30,6 +30,7 @@ import {
   Shield,
   ShieldCheck,
   Coins,
+  MessageSquare,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
@@ -183,6 +184,12 @@ export function Header() {
                     <Link href="/settings">
                       <Settings className="mr-2 h-4 w-4" />
                       {t.nav.settings}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/feedback">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      {locale === 'ru' ? 'Обратная связь' : 'Feedback'}
                     </Link>
                   </DropdownMenuItem>
                   {profile.role === 'moderator' && (

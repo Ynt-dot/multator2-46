@@ -142,6 +142,21 @@ export interface Contest {
   created_at: string
 }
 
+export type FeedbackCategory = 'bug' | 'suggestion' | 'praise' | 'other'
+export type FeedbackStatus = 'new' | 'reviewed' | 'closed'
+
+export interface Feedback {
+  id: string
+  user_id: string
+  category: FeedbackCategory
+  rating: number | null
+  message: string
+  status: FeedbackStatus
+  created_at: string
+  // Joined data
+  profile?: Profile
+}
+
 export interface Notification {
   id: string
   user_id: string
