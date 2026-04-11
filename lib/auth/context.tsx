@@ -56,19 +56,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    let isMounted = true
+
+    // Initial session load — outside the auth lock context
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      if (currentUser) {
+        fetchProfile(currentUser).finally(() => {
+          if (isMounted) setLoading(false)
+        })
+      } else {
+        setLoading(false)
+      }
+    })
+
+    // Auth state changes — defer DB work to avoid lock contention
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event: string, session: Session | null) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          await fetchProfile(session.user)
+      (_event: string, session: Session | null) => {
+        if (!isMounted) return
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+        if (currentUser) {
+          // setTimeout defers the DB query outside the auth lock window
+          setTimeout(() => {
+            if (isMounted) fetchProfile(currentUser)
+          }, 0)
         } else {
           setProfile(null)
+          setLoading(false)
         }
-        setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
