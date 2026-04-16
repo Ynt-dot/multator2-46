@@ -19,6 +19,7 @@ import { format } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
 import type { Profile, Work, UserAchievement } from '@/lib/types'
 import { getRankInfo } from '@/lib/types'
+import { getAvatarUrl } from '@/lib/dicebear'
 import Link from 'next/link'
 
 export default function ProfilePage() {
@@ -197,7 +198,7 @@ export default function ProfilePage() {
           {/* Profile header */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
             <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
-              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarImage src={getAvatarUrl(profile.username, profile.avatar_url)} />
               <AvatarFallback className="text-2xl">
                 {profile.username.slice(0, 2).toUpperCase()}
               </AvatarFallback>

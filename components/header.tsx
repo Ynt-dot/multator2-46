@@ -35,6 +35,7 @@ import {
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { getRankInfo } from '@/lib/types'
+import { getAvatarUrl } from '@/lib/dicebear'
 
 export function Header() {
   const pathname = usePathname()
@@ -151,7 +152,7 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                      <AvatarImage src={getAvatarUrl(profile.username, profile.avatar_url)} alt={profile.username} />
                       <AvatarFallback>
                         {profile.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
