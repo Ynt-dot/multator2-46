@@ -11,6 +11,7 @@ import type { Work } from '@/lib/types'
 import { getRankInfo } from '@/lib/types'
 import { formatDistanceToNow } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
+import { getAvatarUrl } from '@/lib/dicebear'
 
 interface WorkCardProps {
   work: Work
@@ -72,7 +73,7 @@ export function WorkCard({ work }: WorkCardProps) {
               className="flex items-center gap-2 group/author"
             >
               <Avatar className="h-6 w-6">
-                <AvatarImage src={work.profile.avatar_url || undefined} />
+                <AvatarImage src={getAvatarUrl(work.profile.username, work.profile.avatar_url)} />
                 <AvatarFallback className="text-xs">
                   {work.profile.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
