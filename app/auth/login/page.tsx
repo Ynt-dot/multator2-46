@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -11,6 +11,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FieldGroup, Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
+import {
+  getRateLimitStatus,
+  recordFailedAttempt,
+  resetRateLimit,
+  formatLockoutTime,
+} from '@/lib/utils/rate-limit'
 
 export default function LoginPage() {
   const { t } = useTranslation()
@@ -19,10 +25,33 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
+
+  const rateLimitKey = email ? `login_${email.toLowerCase()}` : 'login'
+
+  useEffect(() => {
+    if (!lockoutRemaining) return
+    const id = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        const next = prev - 1000
+        if (next <= 0) { clearInterval(id); return 0 }
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lockoutRemaining])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    const status = getRateLimitStatus(rateLimitKey)
+    if (status.locked) {
+      setLockoutRemaining(status.remainingMs)
+      setError(`Слишком много попыток. Повторите через ${formatLockoutTime(status.remainingMs)}.`)
+      return
+    }
+
     setLoading(true)
 
     const supabase = createClient()
@@ -32,11 +61,18 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setError(t.auth.loginError)
+      const result = recordFailedAttempt(rateLimitKey)
+      if (result.locked) {
+        setLockoutRemaining(result.remainingMs)
+        setError(`Слишком много попыток. Повторите через ${formatLockoutTime(result.remainingMs)}.`)
+      } else {
+        setError(t.auth.loginError)
+      }
       setLoading(false)
       return
     }
 
+    resetRateLimit(rateLimitKey)
     router.push('/')
     router.refresh()
   }
@@ -81,9 +117,11 @@ export default function LoginPage() {
             </FieldGroup>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || lockoutRemaining > 0}>
               {loading ? <Spinner className="mr-2" /> : null}
-              {t.auth.loginButton}
+              {lockoutRemaining > 0
+                ? `Подождите ${formatLockoutTime(lockoutRemaining)}`
+                : t.auth.loginButton}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               {t.auth.noAccount}{' '}

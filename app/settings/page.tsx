@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/header'
 import { useTranslation } from '@/lib/i18n/context'
@@ -18,6 +18,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import { Save, Coins } from 'lucide-react'
 import { getRankInfo, RANKS } from '@/lib/types'
+
+function ProgressBar({ value }: { value: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    ref.current?.style.setProperty('width', `${value}%`)
+  }, [value])
+  return <div ref={ref} className="h-full bg-primary rounded-full transition-all" />
+}
 
 export default function SettingsPage() {
   const { t, locale } = useTranslation()
@@ -251,10 +259,7 @@ export default function SettingsPage() {
                     <span>{profile.total_likes} / {nextRank.minLikes}</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all"
-                      style={{ width: `${progressToNext}%` }}
-                    />
+                    <ProgressBar value={progressToNext} />
                   </div>
                 </div>
               )}
