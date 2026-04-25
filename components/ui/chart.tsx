@@ -69,6 +69,10 @@ function ChartContainer({
   )
 }
 
+// Prevent CSS injection from config keys/values that could break out of the style block
+const safeCssIdent = (s: string) => s.replace(/[^a-zA-Z0-9-_]/g, '')
+const safeCssValue = (s: string) => s.replace(/[;{}<>]/g, '')
+
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, config]) => config.theme || config.color,
@@ -90,7 +94,7 @@ ${colorConfig
     const color =
       itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
       itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
+    return color ? `  --color-${safeCssIdent(key)}: ${safeCssValue(color)};` : null
   })
   .join('\n')}
 }

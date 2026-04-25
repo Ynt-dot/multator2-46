@@ -1,55 +1,37 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import useSWRInfinite from 'swr/infinite'
 import { Header } from '@/components/header'
 import { WorkGrid } from '@/components/work-grid'
 import { useTranslation } from '@/lib/i18n/context'
-import { createClient } from '@/lib/supabase/client'
+import { fetchCategoryPage, FEED_PAGE_SIZE } from '@/lib/fetchers'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TrendingUp, Clock, Film, Image, BookOpen } from 'lucide-react'
-import type { Work, WorkType } from '@/lib/types'
+import type { Work, WorkCategory, WorkType } from '@/lib/types'
 
 export default function SandboxPage() {
   const { t, locale } = useTranslation()
-  const [works, setWorks] = useState<Work[]>([])
-  const [loading, setLoading] = useState(true)
   const [sortBy, setSortBy] = useState<'popular' | 'newest'>('newest')
   const [typeFilter, setTypeFilter] = useState<WorkType | 'all'>('all')
 
-  useEffect(() => {
-    const fetchWorks = async () => {
-      setLoading(true)
-      const supabase = createClient()
-      
-      let query = supabase
-        .from('works')
-        .select(`
-          *,
-          profile:profiles!works_user_id_fkey(*)
-        `)
-        .eq('is_published', true)
-        .eq('category', 'sandbox')
+  const getKey = (page: number, prev: Work[] | null) => {
+    if (prev !== null && prev.length < FEED_PAGE_SIZE) return null
+    return ['category', 'sandbox' as WorkCategory, sortBy, typeFilter, page] as [string, WorkCategory, string, WorkType | 'all', number]
+  }
 
-      if (typeFilter !== 'all') {
-        query = query.eq('type', typeFilter)
-      }
+  const { data, size, setSize, isLoading, isValidating } = useSWRInfinite(
+    getKey,
+    fetchCategoryPage,
+    { revalidateFirstPage: false },
+  )
 
-      if (sortBy === 'popular') {
-        query = query.order('likes_count', { ascending: false })
-      } else {
-        query = query.order('created_at', { ascending: false })
-      }
-
-      query = query.limit(40)
-
-      const { data } = await query
-      setWorks(data as Work[] || [])
-      setLoading(false)
-    }
-
-    fetchWorks()
-  }, [sortBy, typeFilter])
+  const works = data?.flat() ?? []
+  const isLoadingInitial = isLoading && !data
+  const loadingMore = isValidating && !!data && size > 1
+  const hasMore = !!data && data[data.length - 1]?.length === FEED_PAGE_SIZE
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,7 +96,21 @@ export default function SandboxPage() {
         </div>
 
         {/* Works grid */}
-        <WorkGrid works={works} loading={loading} />
+        <WorkGrid works={works} loading={isLoadingInitial} />
+        {hasMore && !isLoadingInitial && (
+          <div className="flex justify-center mt-8">
+            <Button variant="outline" onClick={() => setSize(size + 1)} disabled={loadingMore}>
+              {loadingMore ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {locale === 'ru' ? 'Загрузка...' : 'Loading...'}
+                </span>
+              ) : (
+                locale === 'ru' ? 'Загрузить ещё' : 'Load more'
+              )}
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   )

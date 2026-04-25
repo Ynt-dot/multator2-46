@@ -9,7 +9,7 @@ import { Timeline } from '@/components/editor/timeline'
 import { EditorProvider, useEditor } from '@/lib/editor/context'
 import { useTranslation } from '@/lib/i18n/context'
 import { useAuth } from '@/lib/auth/context'
-import { createClient } from '@/lib/supabase/client'
+import { publishWork } from '@/lib/actions/works'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -38,49 +38,29 @@ function EditorContent() {
   const canvasHeight = 600
 
   const handlePublish = async () => {
-    if (!user || !title.trim()) {
-      toast.error(locale === 'ru' ? 'Введите название' : 'Enter a title')
-      return
-    }
-
     setPublishing(true)
 
-    try {
-      const supabase = createClient()
-
-      // Save frames data
-      const framesData = {
+    const result = await publishWork({
+      title,
+      description: description.trim() || null,
+      type: workType,
+      category,
+      frames_data: {
         frames: state.frames,
         fps: state.fps,
         width: canvasWidth,
         height: canvasHeight,
-      }
+      },
+    })
 
-      // Create work
-      const { data, error } = await supabase
-        .from('works')
-        .insert({
-          user_id: user.id,
-          title: title.trim(),
-          description: description.trim() || null,
-          type: workType,
-          category,
-          frames_data: framesData,
-          content_url: '',
-          is_published: true,
-        })
-        .select()
-        .single()
+    setPublishing(false)
+    setShowPublishDialog(false)
 
-      if (error) throw error
-
+    if ('error' in result) {
+      toast.error(result.error)
+    } else {
       toast.success(locale === 'ru' ? 'Работа опубликована!' : 'Work published!')
-      router.push(`/work/${data.id}`)
-    } catch {
-      toast.error(locale === 'ru' ? 'Ошибка публикации' : 'Publishing error')
-    } finally {
-      setPublishing(false)
-      setShowPublishDialog(false)
+      router.push(`/work/${result.id}`)
     }
   }
 

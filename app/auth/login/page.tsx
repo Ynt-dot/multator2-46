@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/lib/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,12 +10,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FieldGroup, Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  getRateLimitStatus,
-  recordFailedAttempt,
-  resetRateLimit,
-  formatLockoutTime,
-} from '@/lib/utils/rate-limit'
+import { formatLockoutTime } from '@/lib/utils/rate-limit'
+import { loginAction } from '@/lib/actions/auth'
 
 export default function LoginPage() {
   const { t } = useTranslation()
@@ -26,8 +21,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [lockoutRemaining, setLockoutRemaining] = useState(0)
-
-  const rateLimitKey = email ? `login_${email.toLowerCase()}` : 'login'
 
   useEffect(() => {
     if (!lockoutRemaining) return
@@ -44,25 +37,12 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    const status = getRateLimitStatus(rateLimitKey)
-    if (status.locked) {
-      setLockoutRemaining(status.remainingMs)
-      setError(`Слишком много попыток. Повторите через ${formatLockoutTime(status.remainingMs)}.`)
-      return
-    }
-
     setLoading(true)
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const result = await loginAction(email, password)
 
-    if (error) {
-      const result = recordFailedAttempt(rateLimitKey)
-      if (result.locked) {
+    if ('error' in result) {
+      if (result.rateLimited && result.remainingMs) {
         setLockoutRemaining(result.remainingMs)
         setError(`Слишком много попыток. Повторите через ${formatLockoutTime(result.remainingMs)}.`)
       } else {
@@ -72,7 +52,6 @@ export default function LoginPage() {
       return
     }
 
-    resetRateLimit(rateLimitKey)
     router.push('/')
     router.refresh()
   }

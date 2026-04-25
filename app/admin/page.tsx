@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/header'
@@ -31,11 +31,18 @@ export default function AdminPage() {
   const { locale } = useTranslation()
   const { user, profile } = useAuth()
 
+  const PAGE_SIZE = 50
   const [stats, setStats] = useState<StatsData>({ totalUsers: 0, totalWorks: 0, totalLikes: 0, newUsersToday: 0 })
   const [users, setUsers] = useState<Profile[]>([])
   const [works, setWorks] = useState<Work[]>([])
   const [searchUser, setSearchUser] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadingMoreUsers, setLoadingMoreUsers] = useState(false)
+  const [loadingMoreWorks, setLoadingMoreWorks] = useState(false)
+  const [hasMoreUsers, setHasMoreUsers] = useState(false)
+  const [hasMoreWorks, setHasMoreWorks] = useState(false)
+  const usersOffsetRef = useRef(0)
+  const worksOffsetRef = useRef(0)
 
   useEffect(() => {
     if (!user) { router.push('/auth/login'); return }
@@ -46,28 +53,60 @@ export default function AdminPage() {
   const fetchData = async () => {
     const supabase = createClient()
     setLoading(true)
+    usersOffsetRef.current = 0
+    worksOffsetRef.current = 0
 
-    const [usersRes, worksRes] = await Promise.all([
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('works').select('*, profile:profiles!works_user_id_fkey(*)').order('created_at', { ascending: false }).limit(50),
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const [usersCountRes, worksCountRes, newTodayRes, usersRes, worksRes, likesRes] = await Promise.all([
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('works').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
+      supabase.from('works').select('*, profile:profiles!works_user_id_fkey(*)').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
+      supabase.from('profiles').select('total_likes'),
     ])
 
     const allUsers = usersRes.data as Profile[] || []
     const allWorks = worksRes.data as Work[] || []
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const newToday = allUsers.filter(u => new Date(u.created_at) >= today).length
+    const totalLikes = (likesRes.data || []).reduce((sum: number, u: { total_likes: number }) => sum + (u.total_likes || 0), 0)
 
     setUsers(allUsers)
     setWorks(allWorks)
+    setHasMoreUsers(allUsers.length === PAGE_SIZE)
+    setHasMoreWorks(allWorks.length === PAGE_SIZE)
     setStats({
-      totalUsers: allUsers.length,
-      totalWorks: allWorks.length,
-      totalLikes: allUsers.reduce((sum, u) => sum + (u.total_likes || 0), 0),
-      newUsersToday: newToday,
+      totalUsers: usersCountRes.count ?? allUsers.length,
+      totalWorks: worksCountRes.count ?? allWorks.length,
+      totalLikes,
+      newUsersToday: newTodayRes.count ?? 0,
     })
     setLoading(false)
+  }
+
+  const loadMoreUsers = async () => {
+    const next = usersOffsetRef.current + PAGE_SIZE
+    usersOffsetRef.current = next
+    setLoadingMoreUsers(true)
+    const supabase = createClient()
+    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false }).range(next, next + PAGE_SIZE - 1)
+    const result = data as Profile[] || []
+    setUsers(prev => [...prev, ...result])
+    setHasMoreUsers(result.length === PAGE_SIZE)
+    setLoadingMoreUsers(false)
+  }
+
+  const loadMoreWorks = async () => {
+    const next = worksOffsetRef.current + PAGE_SIZE
+    worksOffsetRef.current = next
+    setLoadingMoreWorks(true)
+    const supabase = createClient()
+    const { data } = await supabase.from('works').select('*, profile:profiles!works_user_id_fkey(*)').order('created_at', { ascending: false }).range(next, next + PAGE_SIZE - 1)
+    const result = data as Work[] || []
+    setWorks(prev => [...prev, ...result])
+    setHasMoreWorks(result.length === PAGE_SIZE)
+    setLoadingMoreWorks(false)
   }
 
   const setUserRole = async (userId: string, role: string) => {
@@ -209,7 +248,7 @@ export default function AdminPage() {
               </div>
 
               <div className="space-y-2">
-                {filteredUsers.map(u => (
+                {(searchUser ? filteredUsers : users).map(u => (
                   <Card key={u.id}>
                     <CardContent className="flex items-center gap-3 p-3">
                       <Link href={`/profile/${u.username}`}>
@@ -261,6 +300,13 @@ export default function AdminPage() {
                   </Card>
                 ))}
               </div>
+              {hasMoreUsers && !searchUser && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" size="sm" onClick={loadMoreUsers} disabled={loadingMoreUsers}>
+                    {loadingMoreUsers ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё пользователей' : 'Load more users')}
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="works" className="mt-4 space-y-2">
@@ -291,6 +337,13 @@ export default function AdminPage() {
                   </CardContent>
                 </Card>
               ))}
+              {hasMoreWorks && (
+                <div className="flex justify-center pt-2">
+                  <Button variant="outline" size="sm" onClick={loadMoreWorks} disabled={loadingMoreWorks}>
+                    {loadingMoreWorks ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё работы' : 'Load more works')}
+                  </Button>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

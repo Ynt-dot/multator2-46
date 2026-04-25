@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import useSWR from 'swr'
+import useSWRInfinite from 'swr/infinite'
 import { Header } from '@/components/header'
 import { WorkGrid } from '@/components/work-grid'
 import { useTranslation } from '@/lib/i18n/context'
 import { useAuth } from '@/lib/auth/context'
-import { createClient } from '@/lib/supabase/client'
+import { fetchFollowingIds, fetchFeedPage, FEED_PAGE_SIZE } from '@/lib/fetchers'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,50 +18,33 @@ import type { Work } from '@/lib/types'
 export default function HomePage() {
   const { t, locale } = useTranslation()
   const { user } = useAuth()
-  const [works, setWorks] = useState<Work[]>([])
-  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'popular' | 'newest' | 'following'>('popular')
 
-  useEffect(() => {
-    const fetchWorks = async () => {
-      setLoading(true)
-      const supabase = createClient()
-      
-      let query = supabase
-        .from('works')
-        .select(`
-          *,
-          profile:profiles!works_user_id_fkey(*)
-        `)
-        .eq('is_published', true)
+  const { data: followingIds } = useSWR(
+    filter === 'following' && user?.id ? ['following-ids', user.id] : null,
+    fetchFollowingIds,
+    { revalidateOnFocus: false },
+  )
 
-      if (filter === 'popular') {
-        query = query.order('likes_count', { ascending: false })
-      } else if (filter === 'newest') {
-        query = query.order('created_at', { ascending: false })
-      } else if (filter === 'following' && user) {
-        const { data: follows } = await supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', user.id)
-        
-        const followingIds = follows?.map(f => f.following_id) || []
-        if (followingIds.length > 0) {
-          query = query.in('user_id', followingIds)
-        }
-        query = query.order('created_at', { ascending: false })
-      }
-
-      query = query.limit(20)
-
-      const { data } = await query
-
-      setWorks(data as Work[] || [])
-      setLoading(false)
+  const getKey = (page: number, prev: Work[] | null) => {
+    if (prev !== null && prev.length < FEED_PAGE_SIZE) return null
+    if (filter === 'following') {
+      if (!user?.id || followingIds === undefined) return null
+      return ['feed', filter, followingIds.join(','), page] as [string, string, string, number]
     }
+    return ['feed', filter, '', page] as [string, string, string, number]
+  }
 
-    fetchWorks()
-  }, [filter, user])
+  const { data, size, setSize, isLoading, isValidating } = useSWRInfinite(
+    getKey,
+    fetchFeedPage,
+    { revalidateFirstPage: false },
+  )
+
+  const works = data?.flat() ?? []
+  const isLoadingInitial = isLoading && !data
+  const loadingMore = isValidating && !!data && size > 1
+  const hasMore = !!data && data[data.length - 1]?.length === FEED_PAGE_SIZE
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,7 +154,21 @@ export default function HomePage() {
             </Tabs>
           </div>
 
-          <WorkGrid works={works} loading={loading} />
+          <WorkGrid works={works} loading={isLoadingInitial} />
+          {hasMore && !isLoadingInitial && (
+            <div className="flex justify-center mt-8">
+              <Button variant="outline" onClick={() => setSize(size + 1)} disabled={loadingMore}>
+                {loadingMore ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    {locale === 'ru' ? 'Загрузка...' : 'Loading...'}
+                  </span>
+                ) : (
+                  locale === 'ru' ? 'Загрузить ещё' : 'Load more'
+                )}
+              </Button>
+            </div>
+          )}
         </section>
       </main>
 

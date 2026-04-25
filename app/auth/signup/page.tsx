@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/lib/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,14 +13,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import type { UserType } from '@/lib/types'
-import {
-  getRateLimitStatus,
-  recordFailedAttempt,
-  resetRateLimit,
-  formatLockoutTime,
-} from '@/lib/utils/rate-limit'
-
-const SIGNUP_RATE_KEY = 'signup'
+import { formatLockoutTime } from '@/lib/utils/rate-limit'
+import { signupAction } from '@/lib/actions/auth'
 
 export default function SignupPage() {
   const { t } = useTranslation()
@@ -51,13 +44,6 @@ export default function SignupPage() {
     e.preventDefault()
     setError(null)
 
-    const status = getRateLimitStatus(SIGNUP_RATE_KEY)
-    if (status.locked) {
-      setLockoutRemaining(status.remainingMs)
-      setError(`Слишком много попыток. Повторите через ${formatLockoutTime(status.remainingMs)}.`)
-      return
-    }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       return
@@ -70,24 +56,10 @@ export default function SignupPage() {
 
     setLoading(true)
 
-    const supabase = createClient()
+    const result = await signupAction(email, password, username, userType)
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-          `${window.location.origin}/auth/callback`,
-        data: {
-          username,
-          user_type: userType,
-        },
-      },
-    })
-
-    if (error) {
-      const result = recordFailedAttempt(SIGNUP_RATE_KEY)
-      if (result.locked) {
+    if ('error' in result) {
+      if (result.rateLimited && result.remainingMs) {
         setLockoutRemaining(result.remainingMs)
         setError(`Слишком много попыток. Повторите через ${formatLockoutTime(result.remainingMs)}.`)
       } else {
@@ -97,7 +69,6 @@ export default function SignupPage() {
       return
     }
 
-    resetRateLimit(SIGNUP_RATE_KEY)
     router.push('/auth/signup-success')
   }
 

@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import useSWR from 'swr'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/header'
 import { useTranslation } from '@/lib/i18n/context'
 import { useAuth } from '@/lib/auth/context'
-import { createClient } from '@/lib/supabase/client'
+import { submitFeedback } from '@/lib/actions/feedback'
+import { fetchFeedbackHistory } from '@/lib/fetchers'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,56 +50,28 @@ export default function FeedbackPage() {
   const [hoverRating, setHoverRating] = useState<number | null>(null)
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [history, setHistory] = useState<Feedback[]>([])
-  const [loadingHistory, setLoadingHistory] = useState(true)
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login')
-      return
-    }
-    loadHistory()
-  }, [user, router])
+  const { data: history = [], isLoading: loadingHistory, mutate } = useSWR(
+    user ? 'feedback-history' : null,
+    fetchFeedbackHistory,
+  )
 
-  const loadHistory = async () => {
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('feedback')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(20)
-
-    if (!error && data) {
-      setHistory(data as Feedback[])
-    }
-    setLoadingHistory(false)
-  }
+  if (!user) router.push('/auth/login')
 
   const handleSubmit = async () => {
-    if (!user || !message.trim()) return
-    if (message.trim().length < 10) {
-      toast.error(locale === 'ru' ? 'Минимум 10 символов' : 'Minimum 10 characters')
-      return
-    }
+    if (!user) return
 
     setSubmitting(true)
-    const supabase = createClient()
+    const result = await submitFeedback({ category, rating, message })
 
-    const { error } = await supabase.from('feedback').insert({
-      user_id: user.id,
-      category,
-      rating: rating ?? null,
-      message: message.trim(),
-    })
-
-    if (error) {
-      toast.error(locale === 'ru' ? 'Ошибка отправки' : 'Failed to submit')
+    if ('error' in result) {
+      toast.error(result.error)
     } else {
       toast.success(locale === 'ru' ? 'Спасибо за обратную связь!' : 'Thank you for your feedback!')
       setMessage('')
       setRating(null)
       setCategory('suggestion')
-      await loadHistory()
+      mutate()
     }
 
     setSubmitting(false)
