@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CheckCircle2 } from 'lucide-react'
 
 export default function SignupSuccessPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -21,7 +21,7 @@ export default function SignupSuccessPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            {t.locale === 'ru' 
+            {locale === 'ru'
               ? 'Мы отправили вам письмо с ссылкой для подтверждения. Пожалуйста, проверьте вашу почту.'
               : 'We sent you an email with a confirmation link. Please check your inbox.'}
           </p>
