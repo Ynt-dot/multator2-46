@@ -41,6 +41,7 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
       .single()
 
     if (insertError) {
+      console.error('[publishWork] insert failed:', JSON.stringify(insertError))
       captureError(insertError, { action: 'publishWork', userId: user.id })
       return { error: 'Ошибка публикации' }
     }
