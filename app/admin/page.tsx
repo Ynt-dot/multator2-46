@@ -64,7 +64,7 @@ export default function AdminPage() {
       supabase.from('works').select('*', { count: 'exact', head: true }),
       supabase.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', today.toISOString()),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
-      supabase.from('works').select('*, profile:profiles!works_user_id_fkey(*)').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
+      supabase.from('works').select('*, profile:profiles!user_id(*)').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
       supabase.from('profiles').select('total_likes'),
     ])
 
@@ -102,7 +102,7 @@ export default function AdminPage() {
     worksOffsetRef.current = next
     setLoadingMoreWorks(true)
     const supabase = createClient()
-    const { data } = await supabase.from('works').select('*, profile:profiles!works_user_id_fkey(*)').order('created_at', { ascending: false }).range(next, next + PAGE_SIZE - 1)
+    const { data } = await supabase.from('works').select('*, profile:profiles!user_id(*)').order('created_at', { ascending: false }).range(next, next + PAGE_SIZE - 1)
     const result = data as Work[] || []
     setWorks(prev => [...prev, ...result])
     setHasMoreWorks(result.length === PAGE_SIZE)

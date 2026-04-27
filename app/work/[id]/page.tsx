@@ -56,7 +56,7 @@ export default function WorkPage() {
 
         const { data: workData } = await supabase
           .from('works')
-          .select('*, profile:profiles!works_user_id_fkey(*)')
+          .select('*, profile:profiles!user_id(*)')
           .eq('id', workId)
           .single()
 

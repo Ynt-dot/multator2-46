@@ -58,7 +58,7 @@ export default function ThemesPage() {
     if (theme) {
       const { data: works } = await supabase
         .from('works')
-        .select('*, profile:profiles!works_user_id_fkey(*)')
+        .select('*, profile:profiles!user_id(*)')
         .eq('daily_theme_id', theme.id)
         .eq('is_published', true)
         .order('likes_count', { ascending: false })
