@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/header'
 import { useTranslation } from '@/lib/i18n/context'
 import { useAuth } from '@/lib/auth/context'
 import { createClient } from '@/lib/supabase/client'
+import { updateProfile } from '@/lib/actions/settings'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,6 +19,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import { Save, Coins } from 'lucide-react'
 import { getRankInfo, RANKS } from '@/lib/types'
+
+function ProgressBar({ value }: { value: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    ref.current?.style.setProperty('width', `${value}%`)
+  }, [value])
+  return <div ref={ref} className="h-full bg-primary rounded-full transition-all" />
+}
 
 export default function SettingsPage() {
   const { t, locale } = useTranslation()
@@ -79,25 +88,21 @@ export default function SettingsPage() {
     if (usernameError) return
 
     setSaving(true)
-    const supabase = createClient()
 
-    const updates: Record<string, string | null> = {
+    const data: Record<string, string | null | undefined> = {
       display_name: displayName || null,
       bio: bio || null,
       avatar_url: avatarUrl || null,
     }
 
-    if (newUsername && newUsername !== profile.username && newUsername.length >= 3) {
-      updates.username = newUsername
+    if (newUsername && newUsername !== profile.username) {
+      data.username = newUsername
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+    const result = await updateProfile(data)
 
-    if (error) {
-      toast.error(locale === 'ru' ? 'Ошибка сохранения' : 'Error saving')
+    if ('error' in result) {
+      toast.error(result.error)
     } else {
       toast.success(locale === 'ru' ? 'Профиль обновлён' : 'Profile updated')
       await refreshProfile()
@@ -251,10 +256,7 @@ export default function SettingsPage() {
                     <span>{profile.total_likes} / {nextRank.minLikes}</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary rounded-full transition-all"
-                      style={{ width: `${progressToNext}%` }}
-                    />
+                    <ProgressBar value={progressToNext} />
                   </div>
                 </div>
               )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/header'
 import { AnimationPlayer } from '@/components/animation-player'
@@ -51,47 +51,49 @@ export default function WorkPage() {
 
   useEffect(() => {
     const fetchWork = async () => {
-      const supabase = createClient()
+      try {
+        const supabase = createClient()
 
-      const { data: workData } = await supabase
-        .from('works')
-        .select('*, profile:profiles!works_user_id_fkey(*)')
-        .eq('id', workId)
-        .single()
+        const { data: workData } = await supabase
+          .from('works')
+          .select('*, profile:profiles!works_user_id_fkey(*)')
+          .eq('id', workId)
+          .single()
 
-      if (workData) {
-        setWork(workData as Work)
-        setLikesCount(workData.likes_count)
-        await supabase.rpc('increment_views', { work_id: workId })
-      }
+        if (workData) {
+          setWork(workData as Work)
+          setLikesCount(workData.likes_count)
+          await supabase.rpc('increment_views', { work_id: workId })
+        }
 
-      const [commentsRes, medalsRes] = await Promise.all([
-        supabase
-          .from('comments')
-          .select('*, profile:profiles!comments_user_id_fkey(*)')
-          .eq('work_id', workId)
-          .order('created_at', { ascending: true }),
-        supabase
-          .from('medals')
-          .select('*, giver:profiles!medals_giver_id_fkey(*)')
-          .eq('work_id', workId),
-      ])
-
-      setComments(commentsRes.data as Comment[] || [])
-      setMedals(medalsRes.data as MedalType[] || [])
-
-      if (user) {
-        const [likeRes, favRes, medalRes] = await Promise.all([
-          supabase.from('likes').select('id').eq('work_id', workId).eq('user_id', user.id).single(),
-          supabase.from('favorites').select('id').eq('work_id', workId).eq('user_id', user.id).single(),
-          supabase.from('medals').select('*').eq('work_id', workId).eq('giver_id', user.id).single(),
+        const [commentsRes, medalsRes] = await Promise.all([
+          supabase
+            .from('comments')
+            .select('*, profile:profiles!comments_user_id_fkey(*)')
+            .eq('work_id', workId)
+            .order('created_at', { ascending: true }),
+          supabase
+            .from('medals')
+            .select('*, giver:profiles!medals_giver_id_fkey(*)')
+            .eq('work_id', workId),
         ])
-        setLiked(!!likeRes.data)
-        setFavorited(!!favRes.data)
-        setUserMedal(medalRes.data as MedalType || null)
-      }
 
-      setLoading(false)
+        setComments(commentsRes.data as Comment[] || [])
+        setMedals(medalsRes.data as MedalType[] || [])
+
+        if (user) {
+          const [likeRes, favRes, medalRes] = await Promise.all([
+            supabase.from('likes').select('id').eq('work_id', workId).eq('user_id', user.id).single(),
+            supabase.from('favorites').select('id').eq('work_id', workId).eq('user_id', user.id).single(),
+            supabase.from('medals').select('*').eq('work_id', workId).eq('giver_id', user.id).single(),
+          ])
+          setLiked(!!likeRes.data)
+          setFavorited(!!favRes.data)
+          setUserMedal(medalRes.data as MedalType || null)
+        }
+      } finally {
+        setLoading(false)
+      }
     }
 
     fetchWork()
@@ -100,28 +102,36 @@ export default function WorkPage() {
   const handleLike = async () => {
     if (!user) { router.push('/auth/login'); return }
     const supabase = createClient()
-    if (liked) {
-      await supabase.from('likes').delete().eq('work_id', workId).eq('user_id', user.id)
-      setLiked(false)
-      setLikesCount(prev => prev - 1)
-    } else {
-      await supabase.from('likes').insert({ work_id: workId, user_id: user.id })
-      setLiked(true)
-      setLikesCount(prev => prev + 1)
+    try {
+      if (liked) {
+        await supabase.from('likes').delete().eq('work_id', workId).eq('user_id', user.id)
+        setLiked(false)
+        setLikesCount(prev => prev - 1)
+      } else {
+        await supabase.from('likes').insert({ work_id: workId, user_id: user.id })
+        setLiked(true)
+        setLikesCount(prev => prev + 1)
+      }
+    } catch {
+      toast.error(locale === 'ru' ? 'Ошибка. Попробуйте снова.' : 'Error. Please try again.')
     }
   }
 
   const handleFavorite = async () => {
     if (!user) { router.push('/auth/login'); return }
     const supabase = createClient()
-    if (favorited) {
-      await supabase.from('favorites').delete().eq('work_id', workId).eq('user_id', user.id)
-      setFavorited(false)
-      toast.success(locale === 'ru' ? 'Удалено из избранного' : 'Removed from favorites')
-    } else {
-      await supabase.from('favorites').insert({ work_id: workId, user_id: user.id })
-      setFavorited(true)
-      toast.success(locale === 'ru' ? 'Добавлено в избранное' : 'Added to favorites')
+    try {
+      if (favorited) {
+        await supabase.from('favorites').delete().eq('work_id', workId).eq('user_id', user.id)
+        setFavorited(false)
+        toast.success(locale === 'ru' ? 'Удалено из избранного' : 'Removed from favorites')
+      } else {
+        await supabase.from('favorites').insert({ work_id: workId, user_id: user.id })
+        setFavorited(true)
+        toast.success(locale === 'ru' ? 'Добавлено в избранное' : 'Added to favorites')
+      }
+    } catch {
+      toast.error(locale === 'ru' ? 'Ошибка. Попробуйте снова.' : 'Error. Please try again.')
     }
   }
 
@@ -197,17 +207,24 @@ export default function WorkPage() {
   const handleSubmitComment = async () => {
     if (!user || !newComment.trim()) return
     setSubmittingComment(true)
-    const supabase = createClient()
-    const { data, error } = await supabase
-      .from('comments')
-      .insert({ work_id: workId, user_id: user.id, content: newComment.trim() })
-      .select('*, profile:profiles!comments_user_id_fkey(*)')
-      .single()
-    if (!error && data) {
-      setComments(prev => [...prev, data as Comment])
-      setNewComment('')
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('comments')
+        .insert({ work_id: workId, user_id: user.id, content: newComment.trim() })
+        .select('*, profile:profiles!comments_user_id_fkey(*)')
+        .single()
+      if (!error && data) {
+        setComments(prev => [...prev, data as Comment])
+        setNewComment('')
+      } else if (error) {
+        toast.error(locale === 'ru' ? 'Не удалось отправить комментарий' : 'Failed to send comment')
+      }
+    } catch {
+      toast.error(locale === 'ru' ? 'Ошибка. Попробуйте снова.' : 'Error. Please try again.')
+    } finally {
+      setSubmittingComment(false)
     }
-    setSubmittingComment(false)
   }
 
   if (loading) {
@@ -227,17 +244,7 @@ export default function WorkPage() {
     )
   }
 
-  if (!work) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold">{locale === 'ru' ? 'Работа не найдена' : 'Work not found'}</h1>
-          <Button asChild className="mt-4"><Link href="/">{t.nav.home}</Link></Button>
-        </main>
-      </div>
-    )
-  }
+  if (!work) notFound()
 
   const typeLabel = { animation: t.works.animation, drawing: t.works.drawing, comic: t.works.comic }
 

@@ -1,4 +1,14 @@
 -- Мультатор 2 - Database Triggers and Functions
+-- This script supersedes the trigger/function section of 001_schema.sql.
+-- Drop legacy trigger names from 001_schema.sql to prevent double-firing.
+DROP TRIGGER IF EXISTS trigger_new_user ON auth.users;
+DROP TRIGGER IF EXISTS trigger_like_change ON public.likes;
+DROP TRIGGER IF EXISTS trigger_comment_change ON public.comments;
+DROP TRIGGER IF EXISTS trigger_work_change ON public.works;
+DROP TRIGGER IF EXISTS trigger_follow_change ON public.follows;
+DROP TRIGGER IF EXISTS trigger_gold_transaction ON public.gold_transactions;
+DROP TRIGGER IF EXISTS trigger_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS trigger_works_updated_at ON public.works;
 
 -- Function to create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()

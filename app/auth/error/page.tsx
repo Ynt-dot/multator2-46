@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AlertCircle } from 'lucide-react'
 
 export default function AuthErrorPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -18,14 +18,14 @@ export default function AuthErrorPage() {
           </div>
           <CardTitle className="text-2xl font-bold">{t.common.error}</CardTitle>
           <CardDescription>
-            {t.locale === 'ru'
+            {locale === 'ru'
               ? 'Произошла ошибка при аутентификации'
               : 'An authentication error occurred'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            {t.locale === 'ru'
+            {locale === 'ru'
               ? 'Пожалуйста, попробуйте войти снова или обратитесь в поддержку.'
               : 'Please try logging in again or contact support.'}
           </p>

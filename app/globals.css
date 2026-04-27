@@ -31,7 +31,7 @@
   /* --- Semantic colors --- */
   --success:    #6DBE7E;
   --warning:    #F5A623;
-  --danger:     #E74C3C;
+  --danger:     #C0392B;  /* darkened from #E74C3C — white text now 5.35:1 ✓ */
   --info:       #5B9DBB;
   --highlight:  #FFE5B4;
 
@@ -47,14 +47,15 @@
   --popover:               var(--white-surface);
   --popover-foreground:    var(--black-text);
 
-  --primary:               var(--sunset-gold);
-  --primary-foreground:    var(--black-text);
+  /* #9A6B35: 4.56:1 on white → accessible as link text AND as btn bg with white fg */
+  --primary:               #9A6B35;
+  --primary-foreground:    var(--white-surface);
 
   --secondary:             var(--gray-50);
   --secondary-foreground:  var(--gray-700);
 
   --muted:                 var(--gray-100);
-  --muted-foreground:      var(--gray-500);
+  --muted-foreground:      var(--gray-600);  /* was gray-500 #9D9790 (2.84:1) → gray-600 #6F6B65 (5.2:1) */
 
   --accent:                var(--warm-amber);
   --accent-foreground:     var(--black-text);
@@ -64,7 +65,7 @@
 
   --border:                var(--gray-200);
   --input:                 var(--gray-300);
-  --ring:                  var(--sunset-gold);
+  --ring:                  #9A6B35;  /* matches primary — 4.56:1 focus ring on white */
 
   /* Charts */
   --chart-1: var(--sunset-gold);
@@ -108,7 +109,7 @@
   --secondary-foreground:  var(--white-surface);
 
   --muted:                 var(--gray-700);
-  --muted-foreground:      var(--gray-400);
+  --muted-foreground:      #BDB8B0;  /* was gray-400 #B8B3A7 (4.41:1 on muted) → 4.68:1 ✓ */
 
   --accent:                var(--warm-amber);
   --accent-foreground:     var(--black-text);
@@ -260,7 +261,7 @@
 
   /* Focus indicator — WCAG AA (DESIGN_SYSTEM.md §7.5) */
   :focus-visible {
-    outline: 2px solid var(--sunset-gold);
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 

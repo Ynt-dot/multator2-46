@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useState } from 'react'
+import useSWR from 'swr'
+import { useParams, notFound } from 'next/navigation'
 import { Header } from '@/components/header'
 import { WorkGrid } from '@/components/work-grid'
 import { useTranslation } from '@/lib/i18n/context'
 import { useAuth } from '@/lib/auth/context'
 import { createClient } from '@/lib/supabase/client'
+import { fetchProfile, fetchProfileData, fetchIsFollowing } from '@/lib/fetchers'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -29,102 +31,33 @@ export default function ProfilePage() {
   const { user, profile: currentUserProfile } = useAuth()
   const dateLocale = locale === 'ru' ? ru : enUS
 
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [works, setWorks] = useState<Work[]>([])
-  const [favorites, setFavorites] = useState<Work[]>([])
-  const [achievements, setAchievements] = useState<UserAchievement[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isFollowing, setIsFollowing] = useState(false)
-  const [followersCount, setFollowersCount] = useState(0)
-  const [followingCount, setFollowingCount] = useState(0)
+  const { data: profile, isLoading: loadingProfile } = useSWR(
+    username ? ['profile', username] : null,
+    fetchProfile,
+  )
+
+  const { data: profileData, isLoading: loadingData } = useSWR(
+    profile?.id ? ['profile-data', profile.id] : null,
+    fetchProfileData,
+  )
+
+  const { data: isFollowingData, mutate: mutateFollowing } = useSWR(
+    user?.id && profile?.id && user.id !== profile.id
+      ? ['is-following', user.id, profile.id]
+      : null,
+    fetchIsFollowing,
+    { revalidateOnFocus: false },
+  )
+
+  const works = profileData?.works ?? []
+  const favorites = profileData?.favorites ?? []
+  const achievements = profileData?.achievements ?? []
+  const followersCount = profileData?.followersCount ?? 0
+  const followingCount = profileData?.followingCount ?? 0
+  const isFollowing = isFollowingData ?? false
+  const loading = loadingProfile || loadingData
 
   const isOwnProfile = user && profile && user.id === profile.id
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const supabase = createClient()
-
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('username', username)
-        .single()
-
-      if (!profileData) {
-        setLoading(false)
-        return
-      }
-
-      setProfile(profileData as Profile)
-
-      // Fetch works
-      const { data: worksData } = await supabase
-        .from('works')
-        .select(`
-          *,
-          profile:profiles!works_user_id_fkey(*)
-        `)
-        .eq('user_id', profileData.id)
-        .eq('is_published', true)
-        .order('created_at', { ascending: false })
-
-      setWorks(worksData as Work[] || [])
-
-      // Fetch favorites
-      const { data: favoritesData } = await supabase
-        .from('favorites')
-        .select(`
-          work:works(
-            *,
-            profile:profiles!works_user_id_fkey(*)
-          )
-        `)
-        .eq('user_id', profileData.id)
-        .order('created_at', { ascending: false })
-
-      const favoriteWorks = favoritesData?.map(f => f.work).filter(Boolean) as Work[] || []
-      setFavorites(favoriteWorks)
-
-      // Fetch achievements
-      const { data: achievementsData } = await supabase
-        .from('user_achievements')
-        .select('*, achievement:achievement_definitions(*)')
-        .eq('user_id', profileData.id)
-        .order('earned_at', { ascending: false })
-      setAchievements(achievementsData as UserAchievement[] || [])
-
-      // Fetch follower counts
-      const { count: followers } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('following_id', profileData.id)
-
-      const { count: following } = await supabase
-        .from('follows')
-        .select('*', { count: 'exact', head: true })
-        .eq('follower_id', profileData.id)
-
-      setFollowersCount(followers || 0)
-      setFollowingCount(following || 0)
-
-      // Check if current user is following
-      if (user) {
-        const { data: followData } = await supabase
-          .from('follows')
-          .select('id')
-          .eq('follower_id', user.id)
-          .eq('following_id', profileData.id)
-          .single()
-
-        setIsFollowing(!!followData)
-      }
-
-      setLoading(false)
-    }
-
-    fetchProfile()
-  }, [username, user])
 
   const handleFollow = async () => {
     if (!user || !profile) return
@@ -132,25 +65,17 @@ export default function ProfilePage() {
     const supabase = createClient()
 
     if (isFollowing) {
-      await supabase
-        .from('follows')
-        .delete()
-        .eq('follower_id', user.id)
-        .eq('following_id', profile.id)
-      setIsFollowing(false)
-      setFollowersCount(prev => prev - 1)
+      await supabase.from('follows').delete()
+        .eq('follower_id', user.id).eq('following_id', profile.id)
       toast.success(locale === 'ru' ? 'Вы отписались' : 'Unfollowed')
     } else {
-      await supabase
-        .from('follows')
-        .insert({ follower_id: user.id, following_id: profile.id })
-      setIsFollowing(true)
-      setFollowersCount(prev => prev + 1)
+      await supabase.from('follows').insert({ follower_id: user.id, following_id: profile.id })
       toast.success(locale === 'ru' ? 'Вы подписались' : 'Followed')
     }
+    mutateFollowing()
   }
 
-  if (loading) {
+  if (loading || profile === undefined) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -170,21 +95,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold">
-            {locale === 'ru' ? 'Пользователь не найден' : 'User not found'}
-          </h1>
-          <Button asChild className="mt-4">
-            <Link href="/">{t.nav.home}</Link>
-          </Button>
-        </main>
-      </div>
-    )
-  }
+  if (profile === null) notFound()
 
   const rankInfo = getRankInfo(profile.rank, locale)
   const roleLabel = profile.user_type === 'animator' ? t.auth.animator : t.auth.archaeologist

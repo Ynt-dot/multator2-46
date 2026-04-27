@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { useTranslation } from '@/lib/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +10,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FieldGroup, Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
+import { formatLockoutTime } from '@/lib/utils/rate-limit'
+import { loginAction } from '@/lib/actions/auth'
 
 export default function LoginPage() {
   const { t } = useTranslation()
@@ -19,20 +20,34 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
+
+  useEffect(() => {
+    if (!lockoutRemaining) return
+    const id = setInterval(() => {
+      setLockoutRemaining((prev) => {
+        const next = prev - 1000
+        if (next <= 0) { clearInterval(id); return 0 }
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [lockoutRemaining])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const result = await loginAction(email, password)
 
-    if (error) {
-      setError(t.auth.loginError)
+    if ('error' in result) {
+      if (result.rateLimited && result.remainingMs) {
+        setLockoutRemaining(result.remainingMs)
+        setError(`Слишком много попыток. Повторите через ${formatLockoutTime(result.remainingMs)}.`)
+      } else {
+        setError(t.auth.loginError)
+      }
       setLoading(false)
       return
     }
@@ -81,9 +96,11 @@ export default function LoginPage() {
             </FieldGroup>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading || lockoutRemaining > 0}>
               {loading ? <Spinner className="mr-2" /> : null}
-              {t.auth.loginButton}
+              {lockoutRemaining > 0
+                ? `Подождите ${formatLockoutTime(lockoutRemaining)}`
+                : t.auth.loginButton}
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               {t.auth.noAccount}{' '}

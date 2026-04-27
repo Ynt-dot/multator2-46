@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/header'
@@ -19,8 +19,12 @@ export default function ModerationPage() {
   const router = useRouter()
   const { locale } = useTranslation()
   const { user, profile } = useAuth()
+  const PAGE_SIZE = 50
   const [works, setWorks] = useState<Work[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
+  const offsetRef = useRef(0)
 
   useEffect(() => {
     if (!user) { router.push('/auth/login'); return }
@@ -28,21 +32,34 @@ export default function ModerationPage() {
       router.push('/')
       return
     }
-    fetchPendingWorks()
+    fetchPendingWorks(0, false)
   }, [user, profile])
 
-  const fetchPendingWorks = async () => {
+  const fetchPendingWorks = async (from: number, append: boolean) => {
     const supabase = createClient()
-    // Show recently published works from archaeologists in sandbox for review
     const { data } = await supabase
       .from('works')
       .select('*, profile:profiles!works_user_id_fkey(*)')
       .eq('is_published', true)
       .eq('category', 'sandbox')
       .order('created_at', { ascending: false })
-      .limit(50)
-    setWorks(data as Work[] || [])
-    setLoading(false)
+      .range(from, from + PAGE_SIZE - 1)
+    const result = data as Work[] || []
+    if (append) {
+      setWorks(prev => [...prev, ...result])
+    } else {
+      setWorks(result)
+      setLoading(false)
+    }
+    setHasMore(result.length === PAGE_SIZE)
+  }
+
+  const handleLoadMore = async () => {
+    const next = offsetRef.current + PAGE_SIZE
+    offsetRef.current = next
+    setLoadingMore(true)
+    await fetchPendingWorks(next, true)
+    setLoadingMore(false)
   }
 
   const moveToOldschool = async (workId: string) => {
@@ -126,7 +143,7 @@ export default function ModerationPage() {
               </CardTitle>
             </CardHeader>
 
-            {works.length === 0 ? (
+            {!loading && works.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-8 text-muted-foreground">
                   {locale === 'ru' ? 'Нет работ для проверки' : 'No works to review'}
@@ -169,6 +186,14 @@ export default function ModerationPage() {
               </Card>
             ))}
           </div>
+
+          {hasMore && (
+            <div className="flex justify-center mt-6">
+              <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
+                {loadingMore ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё' : 'Load more')}
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

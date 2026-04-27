@@ -416,12 +416,18 @@ ALTER TABLE public.gold_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.featured_spots ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: anyone can read, only own profile can update
+DROP POLICY IF EXISTS "Profiles are viewable by everyone" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Profiles are viewable by everyone" ON public.profiles
   FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
 -- Works: published works viewable by all, own works full access
+DROP POLICY IF EXISTS "Published works viewable by all" ON public.works;
+DROP POLICY IF EXISTS "Users can insert own works" ON public.works;
+DROP POLICY IF EXISTS "Users can update own works" ON public.works;
+DROP POLICY IF EXISTS "Users can delete own works" ON public.works;
 CREATE POLICY "Published works viewable by all" ON public.works
   FOR SELECT USING (is_published = true OR auth.uid() = user_id);
 CREATE POLICY "Users can insert own works" ON public.works
@@ -432,6 +438,9 @@ CREATE POLICY "Users can delete own works" ON public.works
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Likes: anyone can see, authenticated users can manage own
+DROP POLICY IF EXISTS "Likes viewable by everyone" ON public.likes;
+DROP POLICY IF EXISTS "Authenticated users can like" ON public.likes;
+DROP POLICY IF EXISTS "Users can remove own likes" ON public.likes;
 CREATE POLICY "Likes viewable by everyone" ON public.likes
   FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can like" ON public.likes
@@ -440,6 +449,9 @@ CREATE POLICY "Users can remove own likes" ON public.likes
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Medals: anyone can see, premium users can give
+DROP POLICY IF EXISTS "Medals viewable by everyone" ON public.medals;
+DROP POLICY IF EXISTS "Authenticated users can give medals" ON public.medals;
+DROP POLICY IF EXISTS "Users can remove own medals" ON public.medals;
 CREATE POLICY "Medals viewable by everyone" ON public.medals
   FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can give medals" ON public.medals
@@ -448,6 +460,9 @@ CREATE POLICY "Users can remove own medals" ON public.medals
   FOR DELETE USING (auth.uid() = giver_id);
 
 -- Comments: anyone can see, authenticated can post
+DROP POLICY IF EXISTS "Comments viewable by everyone" ON public.comments;
+DROP POLICY IF EXISTS "Authenticated users can comment" ON public.comments;
+DROP POLICY IF EXISTS "Users can delete own comments" ON public.comments;
 CREATE POLICY "Comments viewable by everyone" ON public.comments
   FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can comment" ON public.comments
@@ -459,18 +474,24 @@ CREATE POLICY "Users can delete own comments" ON public.comments
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Favorites: only own
+DROP POLICY IF EXISTS "Users can view own favorites" ON public.favorites;
+DROP POLICY IF EXISTS "Users can manage own favorites" ON public.favorites;
 CREATE POLICY "Users can view own favorites" ON public.favorites
   FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own favorites" ON public.favorites
   FOR ALL USING (auth.uid() = user_id);
 
 -- Follows: anyone can see, authenticated can manage own
+DROP POLICY IF EXISTS "Follows viewable by everyone" ON public.follows;
+DROP POLICY IF EXISTS "Users can manage own follows" ON public.follows;
 CREATE POLICY "Follows viewable by everyone" ON public.follows
   FOR SELECT USING (true);
 CREATE POLICY "Users can manage own follows" ON public.follows
   FOR ALL USING (auth.uid() = follower_id);
 
 -- Daily themes: anyone can see
+DROP POLICY IF EXISTS "Daily themes viewable by everyone" ON public.daily_themes;
+DROP POLICY IF EXISTS "Admins can manage daily themes" ON public.daily_themes;
 CREATE POLICY "Daily themes viewable by everyone" ON public.daily_themes
   FOR SELECT USING (true);
 CREATE POLICY "Admins can manage daily themes" ON public.daily_themes
@@ -479,20 +500,25 @@ CREATE POLICY "Admins can manage daily themes" ON public.daily_themes
   );
 
 -- Notifications: only own
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
 CREATE POLICY "Users can view own notifications" ON public.notifications
   FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own notifications" ON public.notifications
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- User achievements: anyone can view
+DROP POLICY IF EXISTS "Achievements viewable by everyone" ON public.user_achievements;
 CREATE POLICY "Achievements viewable by everyone" ON public.user_achievements
   FOR SELECT USING (true);
 
 -- Gold transactions: only own
+DROP POLICY IF EXISTS "Users can view own gold transactions" ON public.gold_transactions;
 CREATE POLICY "Users can view own gold transactions" ON public.gold_transactions
   FOR SELECT USING (auth.uid() = user_id);
 
 -- Featured spots: anyone can see
+DROP POLICY IF EXISTS "Featured spots viewable by everyone" ON public.featured_spots;
 CREATE POLICY "Featured spots viewable by everyone" ON public.featured_spots
   FOR SELECT USING (true);
 
