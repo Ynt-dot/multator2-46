@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/client'
+﻿import { createClient } from '@/lib/supabase/client'
 import type { Feedback, Profile, Work, WorkCategory, WorkType } from '@/lib/types'
 
 export const FEED_PAGE_SIZE = 20
 
-// ── Follows ──────────────────────────────────────────────────────────────────
+// в”Ђв”Ђ Follows в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 export async function fetchFollowingIds([, userId]: [string, string]): Promise<string[]> {
   const supabase = createClient()
@@ -14,7 +14,7 @@ export async function fetchFollowingIds([, userId]: [string, string]): Promise<s
   return data?.map(f => f.following_id) ?? []
 }
 
-// ── Feed (home) ───────────────────────────────────────────────────────────────
+// в”Ђв”Ђ Feed (home) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 export async function fetchFeedPage(
   key: [string, string, string, number],
@@ -25,7 +25,7 @@ export async function fetchFeedPage(
 
   let query = supabase
     .from('works')
-    .select('*, profile:profiles!user_id(*)')
+    .select('*, profile:profiles(*)')
     .eq('is_published', true)
 
   if (filter === 'popular') {
@@ -43,7 +43,7 @@ export async function fetchFeedPage(
   return (data as Work[]) ?? []
 }
 
-// ── Category pages (oldschool / sandbox) ─────────────────────────────────────
+// в”Ђв”Ђ Category pages (oldschool / sandbox) в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 export async function fetchCategoryPage(
   key: [string, WorkCategory, string, WorkType | 'all', number],
@@ -54,7 +54,7 @@ export async function fetchCategoryPage(
 
   let query = supabase
     .from('works')
-    .select('*, profile:profiles!user_id(*)')
+    .select('*, profile:profiles(*)')
     .eq('is_published', true)
     .eq('category', category)
 
@@ -69,7 +69,7 @@ export async function fetchCategoryPage(
   return (data as Work[]) ?? []
 }
 
-// ── Profile ───────────────────────────────────────────────────────────────────
+// в”Ђв”Ђ Profile в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 export async function fetchProfile([, username]: [string, string]): Promise<Profile | null> {
   const supabase = createClient()
@@ -86,14 +86,14 @@ export async function fetchProfileData([, userId]: [string, string]) {
   const [worksRes, favRes, achRes, followersRes, followingRes] = await Promise.all([
     supabase
       .from('works')
-      .select('*, profile:profiles!user_id(*)')
+      .select('*, profile:profiles(*)')
       .eq('user_id', userId)
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(50),
     supabase
       .from('favorites')
-      .select('work:works(*, profile:profiles!user_id(*))')
+      .select('work:works(*, profile:profiles(*))')
       .eq('user_id', userId)
       .limit(50),
     supabase
@@ -125,7 +125,7 @@ export async function fetchIsFollowing([, followerId, followingId]: [string, str
   return !!data
 }
 
-// ── Feedback ──────────────────────────────────────────────────────────────────
+// в”Ђв”Ђ Feedback в”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђв”Ђ
 
 export async function fetchFeedbackHistory(): Promise<Feedback[]> {
   const supabase = createClient()

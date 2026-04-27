@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -39,7 +39,7 @@ export default function ModerationPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('works')
-      .select('*, profile:profiles!user_id(*)')
+      .select('*, profile:profiles(*)')
       .eq('is_published', true)
       .eq('category', 'sandbox')
       .order('created_at', { ascending: false })
@@ -70,7 +70,7 @@ export default function ModerationPage() {
       .eq('id', workId)
 
     if (error) {
-      toast.error('Ошибка')
+      toast.error('РћС€РёР±РєР°')
       return
     }
 
@@ -79,16 +79,16 @@ export default function ModerationPage() {
       user_id: user!.id,
       amount: 3,
       type: 'moderation',
-      description: 'Перенос работы в олдскул',
+      description: 'РџРµСЂРµРЅРѕСЃ СЂР°Р±РѕС‚С‹ РІ РѕР»РґСЃРєСѓР»',
       work_id: workId,
     })
 
-    toast.success(locale === 'ru' ? 'Перенесено в олдскул (+3 золота)' : 'Moved to oldschool (+3 gold)')
+    toast.success(locale === 'ru' ? 'РџРµСЂРµРЅРµСЃРµРЅРѕ РІ РѕР»РґСЃРєСѓР» (+3 Р·РѕР»РѕС‚Р°)' : 'Moved to oldschool (+3 gold)')
     setWorks(prev => prev.filter(w => w.id !== workId))
   }
 
   const removeWork = async (workId: string) => {
-    if (!confirm(locale === 'ru' ? 'Скрыть работу за нарушение правил?' : 'Hide work for rule violation?')) return
+    if (!confirm(locale === 'ru' ? 'РЎРєСЂС‹С‚СЊ СЂР°Р±РѕС‚Сѓ Р·Р° РЅР°СЂСѓС€РµРЅРёРµ РїСЂР°РІРёР»?' : 'Hide work for rule violation?')) return
     const supabase = createClient()
     await supabase.from('works').update({ is_published: false }).eq('id', workId)
 
@@ -97,11 +97,11 @@ export default function ModerationPage() {
       user_id: user!.id,
       amount: 2,
       type: 'moderation',
-      description: 'Удаление нарушения',
+      description: 'РЈРґР°Р»РµРЅРёРµ РЅР°СЂСѓС€РµРЅРёСЏ',
       work_id: workId,
     })
 
-    toast.success(locale === 'ru' ? 'Работа скрыта (+2 золота)' : 'Work hidden (+2 gold)')
+    toast.success(locale === 'ru' ? 'Р Р°Р±РѕС‚Р° СЃРєСЂС‹С‚Р° (+2 Р·РѕР»РѕС‚Р°)' : 'Work hidden (+2 gold)')
     setWorks(prev => prev.filter(w => w.id !== workId))
   }
 
@@ -124,29 +124,29 @@ export default function ModerationPage() {
           <div className="flex items-center gap-3 mb-6">
             <ShieldCheck className="h-7 w-7 text-primary" />
             <h1 className="text-2xl font-bold">
-              {locale === 'ru' ? 'Панель модератора' : 'Moderation Panel'}
+              {locale === 'ru' ? 'РџР°РЅРµР»СЊ РјРѕРґРµСЂР°С‚РѕСЂР°' : 'Moderation Panel'}
             </h1>
           </div>
 
           <Card className="mb-6">
             <CardContent className="p-4 text-sm text-muted-foreground space-y-1">
-              <p>• {locale === 'ru' ? 'За перенос в олдскул: +3 золота' : 'Move to oldschool: +3 gold'}</p>
-              <p>• {locale === 'ru' ? 'За скрытие нарушения: +2 золота' : 'Hide violation: +2 gold'}</p>
-              <p>• {locale === 'ru' ? 'Оценивайте работы справедливо — от этого зависит ваше назначение' : 'Rate fairly — your future moderator status depends on it'}</p>
+              <p>вЂў {locale === 'ru' ? 'Р—Р° РїРµСЂРµРЅРѕСЃ РІ РѕР»РґСЃРєСѓР»: +3 Р·РѕР»РѕС‚Р°' : 'Move to oldschool: +3 gold'}</p>
+              <p>вЂў {locale === 'ru' ? 'Р—Р° СЃРєСЂС‹С‚РёРµ РЅР°СЂСѓС€РµРЅРёСЏ: +2 Р·РѕР»РѕС‚Р°' : 'Hide violation: +2 gold'}</p>
+              <p>вЂў {locale === 'ru' ? 'РћС†РµРЅРёРІР°Р№С‚Рµ СЂР°Р±РѕС‚С‹ СЃРїСЂР°РІРµРґР»РёРІРѕ вЂ” РѕС‚ СЌС‚РѕРіРѕ Р·Р°РІРёСЃРёС‚ РІР°С€Рµ РЅР°Р·РЅР°С‡РµРЅРёРµ' : 'Rate fairly вЂ” your future moderator status depends on it'}</p>
             </CardContent>
           </Card>
 
           <div className="space-y-3">
             <CardHeader className="px-0 pb-2">
               <CardTitle className="text-lg">
-                {locale === 'ru' ? `Работы из песочницы (${works.length})` : `Sandbox works (${works.length})`}
+                {locale === 'ru' ? `Р Р°Р±РѕС‚С‹ РёР· РїРµСЃРѕС‡РЅРёС†С‹ (${works.length})` : `Sandbox works (${works.length})`}
               </CardTitle>
             </CardHeader>
 
             {!loading && works.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-8 text-muted-foreground">
-                  {locale === 'ru' ? 'Нет работ для проверки' : 'No works to review'}
+                  {locale === 'ru' ? 'РќРµС‚ СЂР°Р±РѕС‚ РґР»СЏ РїСЂРѕРІРµСЂРєРё' : 'No works to review'}
                 </CardContent>
               </Card>
             ) : works.map(work => (
@@ -158,7 +158,7 @@ export default function ModerationPage() {
                         {work.title}
                       </Link>
                       <Badge variant="secondary">{work.type}</Badge>
-                      <span className="text-sm text-muted-foreground">❤️ {work.likes_count}</span>
+                      <span className="text-sm text-muted-foreground">вќ¤пёЏ {work.likes_count}</span>
                     </div>
                     {work.profile && (
                       <div className="flex items-center gap-2 mt-1">
@@ -173,12 +173,12 @@ export default function ModerationPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button size="sm" variant="outline" onClick={() => moveToOldschool(work.id)}
-                      title={locale === 'ru' ? 'Перенести в олдскул' : 'Move to oldschool'}>
+                      title={locale === 'ru' ? 'РџРµСЂРµРЅРµСЃС‚Рё РІ РѕР»РґСЃРєСѓР»' : 'Move to oldschool'}>
                       <Archive className="h-3 w-3 mr-1" />
                       <ArrowRight className="h-3 w-3" />
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => removeWork(work.id)}
-                      title={locale === 'ru' ? 'Скрыть (нарушение)' : 'Hide (violation)'}>
+                      title={locale === 'ru' ? 'РЎРєСЂС‹С‚СЊ (РЅР°СЂСѓС€РµРЅРёРµ)' : 'Hide (violation)'}>
                       <Shovel className="h-3 w-3" />
                     </Button>
                   </div>
@@ -190,7 +190,7 @@ export default function ModerationPage() {
           {hasMore && (
             <div className="flex justify-center mt-6">
               <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
-                {loadingMore ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё' : 'Load more')}
+                {loadingMore ? (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РєР°...' : 'Loading...') : (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РёС‚СЊ РµС‰С‘' : 'Load more')}
               </Button>
             </div>
           )}
