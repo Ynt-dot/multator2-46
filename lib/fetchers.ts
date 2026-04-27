@@ -107,7 +107,7 @@ export async function fetchProfileData([, userId]: [string, string]) {
 
   return {
     works: (worksRes.data as Work[]) ?? [],
-    favorites: (favRes.data?.map(f => f.work).filter(Boolean) as Work[]) ?? [],
+    favorites: (favRes.data?.map(f => f.work).filter(Boolean) as unknown as Work[]) ?? [],
     achievements: achRes.data ?? [],
     followersCount: followersRes.count ?? 0,
     followingCount: followingRes.count ?? 0,
