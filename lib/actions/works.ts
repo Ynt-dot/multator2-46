@@ -25,7 +25,7 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    const { data: work, error } = await supabase
+    const { data: work, error: insertError } = await supabase
       .from('works')
       .insert({
         user_id: user.id,
@@ -40,7 +40,10 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
       .select('id')
       .single()
 
-    if (error) return { error: 'Ошибка публикации' }
+    if (insertError) {
+      captureError(insertError, { action: 'publishWork', userId: user.id })
+      return { error: 'Ошибка публикации' }
+    }
     return { success: true, id: work.id }
   } catch (err) {
     captureError(err, { action: 'publishWork' })

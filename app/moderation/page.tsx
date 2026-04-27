@@ -39,7 +39,7 @@ export default function ModerationPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('works')
-      .select('*, profile:profiles!works_user_id_fkey(*)')
+      .select('*, profile:profiles!user_id(*)')
       .eq('is_published', true)
       .eq('category', 'sandbox')
       .order('created_at', { ascending: false })

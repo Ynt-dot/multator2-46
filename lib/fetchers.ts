@@ -25,7 +25,7 @@ export async function fetchFeedPage(
 
   let query = supabase
     .from('works')
-    .select('*, profile:profiles!works_user_id_fkey(*)')
+    .select('*, profile:profiles!user_id(*)')
     .eq('is_published', true)
 
   if (filter === 'popular') {
@@ -54,7 +54,7 @@ export async function fetchCategoryPage(
 
   let query = supabase
     .from('works')
-    .select('*, profile:profiles!works_user_id_fkey(*)')
+    .select('*, profile:profiles!user_id(*)')
     .eq('is_published', true)
     .eq('category', category)
 
@@ -86,14 +86,14 @@ export async function fetchProfileData([, userId]: [string, string]) {
   const [worksRes, favRes, achRes, followersRes, followingRes] = await Promise.all([
     supabase
       .from('works')
-      .select('*, profile:profiles!works_user_id_fkey(*)')
+      .select('*, profile:profiles!user_id(*)')
       .eq('user_id', userId)
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(50),
     supabase
       .from('favorites')
-      .select('work:works(*, profile:profiles!works_user_id_fkey(*))')
+      .select('work:works(*, profile:profiles!user_id(*))')
       .eq('user_id', userId)
       .limit(50),
     supabase
