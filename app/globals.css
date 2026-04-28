@@ -77,6 +77,16 @@
   /* Radius base = 8px (md) */
   --radius: 0.5rem;
 
+  /* Spacing scale (DESIGN_SYSTEM.md §3, base 4px) — plain CSS vars, NOT @theme tokens */
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  12px;
+  --spacing-lg:  16px;
+  --spacing-xl:  24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+  --spacing-4xl: 64px;
+
   /* Sidebar */
   --sidebar:                    var(--gray-50);
   --sidebar-foreground:         var(--black-text);
@@ -220,15 +230,9 @@
   --radius-xl:    16px;
   --radius-full:  9999px;
 
-  /* --- Spacing scale (DESIGN_SYSTEM.md §3, base 4px) --- */
-  --spacing-xs:  4px;
-  --spacing-sm:  8px;
-  --spacing-md:  12px;
-  --spacing-lg:  16px;
-  --spacing-xl:  24px;
-  --spacing-2xl: 32px;
-  --spacing-3xl: 48px;
-  --spacing-4xl: 64px;
+  /* --- Spacing scale: kept in @theme so they're accessible as CSS vars,
+         but renamed to avoid clashing with Tailwind's built-in max-w/w/p scale
+         (Tailwind v4 uses --spacing-{name} for max-w-sm, max-w-2xl, etc.) --- */
 
   /* --- Shadow scale (DESIGN_SYSTEM.md §5) --- */
   --shadow-xs: 0 1px 2px  rgba(26, 24, 21, 0.05);
