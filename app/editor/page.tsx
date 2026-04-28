@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import { Save, Download, Upload } from 'lucide-react'
@@ -130,18 +129,18 @@ function EditorContent() {
           <DialogHeader>
             <DialogTitle>{t.common.publish}</DialogTitle>
           </DialogHeader>
-          <FieldGroup>
-            <Field>
-              <FieldLabel>{t.works.title}</FieldLabel>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">{t.works.title}</label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={locale === 'ru' ? 'Название работы' : 'Work title'}
                 maxLength={100}
               />
-            </Field>
-            <Field>
-              <FieldLabel>{t.works.description}</FieldLabel>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">{t.works.description}</label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -149,9 +148,9 @@ function EditorContent() {
                 maxLength={500}
                 rows={3}
               />
-            </Field>
-            <Field>
-              <FieldLabel>{t.works.type}</FieldLabel>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">{t.works.type}</label>
               <Select value={workType} onValueChange={(v) => setWorkType(v as WorkType)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -162,9 +161,9 @@ function EditorContent() {
                   <SelectItem value="comic">{t.works.comic}</SelectItem>
                 </SelectContent>
               </Select>
-            </Field>
-            <Field>
-              <FieldLabel>{t.works.category}</FieldLabel>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">{t.works.category}</label>
               <Select value={category} onValueChange={(v) => setCategory(v as WorkCategory)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -174,8 +173,8 @@ function EditorContent() {
                   <SelectItem value="oldschool">{t.works.oldschool}</SelectItem>
                 </SelectContent>
               </Select>
-            </Field>
-          </FieldGroup>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPublishDialog(false)}>
               {t.common.cancel}
