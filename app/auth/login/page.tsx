@@ -7,7 +7,6 @@ import { useTranslation } from '@/lib/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { FieldGroup, Field, FieldLabel, FieldError } from '@/components/ui/field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
 import { formatLockoutTime } from '@/lib/utils/rate-limit'
@@ -65,14 +64,14 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent>
-            <FieldGroup>
+            <div className="flex flex-col gap-4">
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Field>
-                <FieldLabel htmlFor="email">{t.auth.email}</FieldLabel>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-sm font-medium">{t.auth.email}</label>
                 <Input
                   id="email"
                   type="email"
@@ -81,9 +80,9 @@ export default function LoginPage() {
                   required
                   autoComplete="email"
                 />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">{t.auth.password}</FieldLabel>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="password" className="text-sm font-medium">{t.auth.password}</label>
                 <Input
                   id="password"
                   type="password"
@@ -92,8 +91,8 @@ export default function LoginPage() {
                   required
                   autoComplete="current-password"
                 />
-              </Field>
-            </FieldGroup>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading || lockoutRemaining > 0}>

@@ -7,7 +7,6 @@ import { useTranslation } from '@/lib/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Spinner } from '@/components/ui/spinner'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -81,14 +80,14 @@ export default function SignupPage() {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent>
-            <FieldGroup>
+            <div className="flex flex-col gap-4">
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Field>
-                <FieldLabel htmlFor="username">{t.auth.username}</FieldLabel>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="username" className="text-sm font-medium">{t.auth.username}</label>
                 <Input
                   id="username"
                   type="text"
@@ -100,9 +99,9 @@ export default function SignupPage() {
                   pattern="[a-zA-Z0-9_]+"
                   autoComplete="username"
                 />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="email">{t.auth.email}</FieldLabel>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-sm font-medium">{t.auth.email}</label>
                 <Input
                   id="email"
                   type="email"
@@ -111,9 +110,9 @@ export default function SignupPage() {
                   required
                   autoComplete="email"
                 />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="password">{t.auth.password}</FieldLabel>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="password" className="text-sm font-medium">{t.auth.password}</label>
                 <Input
                   id="password"
                   type="password"
@@ -123,9 +122,9 @@ export default function SignupPage() {
                   minLength={6}
                   autoComplete="new-password"
                 />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="confirmPassword">{t.auth.confirmPassword}</FieldLabel>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="confirmPassword" className="text-sm font-medium">{t.auth.confirmPassword}</label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -134,10 +133,10 @@ export default function SignupPage() {
                   required
                   autoComplete="new-password"
                 />
-              </Field>
-              <Field>
-                <FieldLabel>{t.auth.selectRole}</FieldLabel>
-                <RadioGroup value={userType} onValueChange={(v: string) => setUserType(v as UserType)} className="mt-2">
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">{t.auth.selectRole}</span>
+                <RadioGroup value={userType} onValueChange={(v: string) => setUserType(v as UserType)} className="mt-1 flex flex-col gap-2">
                   <div className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
                     <RadioGroupItem value="animator" id="animator" className="mt-1" />
                     <div className="flex-1">
@@ -157,8 +156,8 @@ export default function SignupPage() {
                     </div>
                   </div>
                 </RadioGroup>
-              </Field>
-            </FieldGroup>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={loading || lockoutRemaining > 0}>
