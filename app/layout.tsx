@@ -51,6 +51,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        {/* Inject Supabase public config at runtime so client.ts can read it
+            even when NEXT_PUBLIC_* vars weren't baked into the client bundle */}
+        <script dangerouslySetInnerHTML={{ __html:
+          `window.__supabaseConfig=${JSON.stringify({
+            url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
+            key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+          })};`
+        }} />
+      </head>
       <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
