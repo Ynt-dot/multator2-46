@@ -43,11 +43,13 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
     if (insertError) {
       console.error('[publishWork] insert failed:', JSON.stringify(insertError))
       captureError(insertError, { action: 'publishWork', userId: user.id })
-      return { error: 'Ошибка публикации' }
+      return { error: `Ошибка публикации: ${insertError.message} [${insertError.code}]` }
     }
     return { success: true, id: work.id }
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[publishWork] unexpected error:', msg)
     captureError(err, { action: 'publishWork' })
-    return { error: 'Ошибка публикации' }
+    return { error: `Ошибка публикации: ${msg}` }
   }
 }
