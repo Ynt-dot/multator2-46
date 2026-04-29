@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -113,9 +113,9 @@ export default function AdminPage() {
     const supabase = createClient()
     const { error } = await supabase.from('profiles').update({ role }).eq('id', userId)
     if (error) {
-      toast.error('РћС€РёР±РєР°')
+      toast.error('Ошибка')
     } else {
-      toast.success('Р РѕР»СЊ РѕР±РЅРѕРІР»РµРЅР°')
+      toast.success('Роль обновлена')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: role as Profile['role'] } : u))
     }
   }
@@ -124,9 +124,9 @@ export default function AdminPage() {
     const supabase = createClient()
     const { error } = await supabase.from('profiles').update({ user_type: userType }).eq('id', userId)
     if (error) {
-      toast.error('РћС€РёР±РєР°')
+      toast.error('Ошибка')
     } else {
-      toast.success('РўРёРї РѕР±РЅРѕРІР»С‘РЅ')
+      toast.success('Тип обновлён')
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, user_type: userType as Profile['user_type'] } : u))
     }
   }
@@ -137,24 +137,24 @@ export default function AdminPage() {
       user_id: userId,
       amount,
       type: 'admin_grant',
-      description: `Р—РѕР»РѕС‚Рѕ РІС‹РґР°РЅРѕ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂРѕРј`,
+      description: 'Золото выдано администратором',
     })
     if (error) {
-      toast.error('РћС€РёР±РєР°')
+      toast.error('Ошибка')
     } else {
-      toast.success(`+${amount} Р·РѕР»РѕС‚Р° РІС‹РґР°РЅРѕ`)
+      toast.success(`+${amount} золота выдано`)
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, gold: (u.gold || 0) + amount } : u))
     }
   }
 
   const deleteWork = async (workId: string) => {
-    if (!confirm(locale === 'ru' ? 'РЈРґР°Р»РёС‚СЊ СЂР°Р±РѕС‚Сѓ?' : 'Delete work?')) return
+    if (!confirm(locale === 'ru' ? 'Удалить работу?' : 'Delete work?')) return
     const supabase = createClient()
     const { error } = await supabase.from('works').delete().eq('id', workId)
     if (error) {
-      toast.error('РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ')
+      toast.error('Ошибка удаления')
     } else {
-      toast.success('Р Р°Р±РѕС‚Р° СѓРґР°Р»РµРЅР°')
+      toast.success('Работа удалена')
       setWorks(prev => prev.filter(w => w.id !== workId))
     }
   }
@@ -163,7 +163,7 @@ export default function AdminPage() {
     const supabase = createClient()
     await supabase.from('works').update({ is_featured: !current }).eq('id', workId)
     setWorks(prev => prev.map(w => w.id === workId ? { ...w, is_featured: !current } : w))
-    toast.success(current ? 'РЈР±СЂР°РЅРѕ СЃ РєРѕР·С‹СЂРЅРѕРіРѕ РјРµСЃС‚Р°' : 'РџРѕСЃС‚Р°РІР»РµРЅРѕ РЅР° РєРѕР·С‹СЂРЅРѕРµ РјРµСЃС‚Рѕ')
+    toast.success(current ? 'Убрано с козырного места' : 'Поставлено на козырное место')
   }
 
   const filteredUsers = users.filter(u =>
@@ -200,17 +200,17 @@ export default function AdminPage() {
           <div className="flex items-center gap-3 mb-8">
             <Shield className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold">
-              {locale === 'ru' ? 'РџР°РЅРµР»СЊ Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂР°' : 'Admin Panel'}
+              {locale === 'ru' ? 'Панель администратора' : 'Admin Panel'}
             </h1>
           </div>
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             {[
-              { label: locale === 'ru' ? 'РџРѕР»СЊР·РѕРІР°С‚РµР»Рё' : 'Users', value: stats.totalUsers, icon: Users },
-              { label: locale === 'ru' ? 'Р Р°Р±РѕС‚С‹' : 'Works', value: stats.totalWorks, icon: ImageIcon },
-              { label: locale === 'ru' ? 'Р’СЃРµРіРѕ Р»Р°Р№РєРѕРІ' : 'Total likes', value: stats.totalLikes, icon: Trophy },
-              { label: locale === 'ru' ? 'РќРѕРІС‹С… СЃРµРіРѕРґРЅСЏ' : 'New today', value: stats.newUsersToday, icon: Crown },
+              { label: locale === 'ru' ? 'Пользователи' : 'Users', value: stats.totalUsers, icon: Users },
+              { label: locale === 'ru' ? 'Работы' : 'Works', value: stats.totalWorks, icon: ImageIcon },
+              { label: locale === 'ru' ? 'Всего лайков' : 'Total likes', value: stats.totalLikes, icon: Trophy },
+              { label: locale === 'ru' ? 'Новых сегодня' : 'New today', value: stats.newUsersToday, icon: Crown },
             ].map(({ label, value, icon: Icon }) => (
               <Card key={label}>
                 <CardContent className="flex items-center gap-3 p-4">
@@ -228,11 +228,11 @@ export default function AdminPage() {
             <TabsList>
               <TabsTrigger value="users">
                 <Users className="h-4 w-4 mr-2" />
-                {locale === 'ru' ? 'РџРѕР»СЊР·РѕРІР°С‚РµР»Рё' : 'Users'}
+                {locale === 'ru' ? 'Пользователи' : 'Users'}
               </TabsTrigger>
               <TabsTrigger value="works">
                 <ImageIcon className="h-4 w-4 mr-2" />
-                {locale === 'ru' ? 'Р Р°Р±РѕС‚С‹' : 'Works'}
+                {locale === 'ru' ? 'Работы' : 'Works'}
               </TabsTrigger>
             </TabsList>
 
@@ -241,7 +241,7 @@ export default function AdminPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-9"
-                  placeholder={locale === 'ru' ? 'РџРѕРёСЃРє РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№...' : 'Search users...'}
+                  placeholder={locale === 'ru' ? 'Поиск пользователей...' : 'Search users...'}
                   value={searchUser}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchUser(e.target.value)}
                 />
@@ -266,11 +266,10 @@ export default function AdminPage() {
                           <Badge variant="outline" className="text-xs">{u.user_type}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          вќ¤пёЏ {u.total_likes} В· вњ¦ {u.gold} В· {locale === 'ru' ? 'Р Р°РЅРі' : 'Rank'} {u.rank}
+                          ❤️ {u.total_likes} · ✦ {u.gold} · {locale === 'ru' ? 'Ранг' : 'Rank'} {u.rank}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Role selector */}
                         <Select value={u.role} onValueChange={(v: string) => setUserRole(u.id, v)}>
                           <SelectTrigger className="h-8 w-32">
                             <SelectValue />
@@ -281,7 +280,6 @@ export default function AdminPage() {
                             <SelectItem value="blocked">blocked</SelectItem>
                           </SelectContent>
                         </Select>
-                        {/* User type */}
                         <Select value={u.user_type} onValueChange={(v: string) => setUserType(u.id, v)}>
                           <SelectTrigger className="h-8 w-36">
                             <SelectValue />
@@ -291,9 +289,8 @@ export default function AdminPage() {
                             <SelectItem value="archaeologist">archaeologist</SelectItem>
                           </SelectContent>
                         </Select>
-                        {/* Give gold */}
                         <Button size="sm" variant="outline" onClick={() => grantGold(u.id, 100)}>
-                          +100вњ¦
+                          +100✦
                         </Button>
                       </div>
                     </CardContent>
@@ -303,7 +300,7 @@ export default function AdminPage() {
               {hasMoreUsers && !searchUser && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" size="sm" onClick={loadMoreUsers} disabled={loadingMoreUsers}>
-                    {loadingMoreUsers ? (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РєР°...' : 'Loading...') : (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РёС‚СЊ РµС‰С‘ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№' : 'Load more users')}
+                    {loadingMoreUsers ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё пользователей' : 'Load more users')}
                   </Button>
                 </div>
               )}
@@ -318,7 +315,7 @@ export default function AdminPage() {
                     </Link>
                     <Badge variant="outline">{w.category}</Badge>
                     <Badge variant="secondary">{w.type}</Badge>
-                    <span className="text-sm text-muted-foreground">вќ¤пёЏ {w.likes_count}</span>
+                    <span className="text-sm text-muted-foreground">❤️ {w.likes_count}</span>
                     {w.profile && (
                       <Link href={`/profile/${w.profile.username}`} className="text-sm text-muted-foreground hover:underline shrink-0">
                         @{w.profile.username}
@@ -329,7 +326,7 @@ export default function AdminPage() {
                       variant={w.is_featured ? 'default' : 'outline'}
                       onClick={() => toggleFeatured(w.id, w.is_featured)}
                     >
-                      {w.is_featured ? 'в…' : 'в†'}
+                      {w.is_featured ? '★' : '☆'}
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => deleteWork(w.id)}>
                       <Ban className="h-3 w-3" />
@@ -340,7 +337,7 @@ export default function AdminPage() {
               {hasMoreWorks && (
                 <div className="flex justify-center pt-2">
                   <Button variant="outline" size="sm" onClick={loadMoreWorks} disabled={loadingMoreWorks}>
-                    {loadingMoreWorks ? (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РєР°...' : 'Loading...') : (locale === 'ru' ? 'Р—Р°РіСЂСѓР·РёС‚СЊ РµС‰С‘ СЂР°Р±РѕС‚С‹' : 'Load more works')}
+                    {loadingMoreWorks ? (locale === 'ru' ? 'Загрузка...' : 'Loading...') : (locale === 'ru' ? 'Загрузить ещё работы' : 'Load more works')}
                   </Button>
                 </div>
               )}
