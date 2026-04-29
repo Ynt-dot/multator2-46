@@ -255,7 +255,7 @@ export default function WorkPage() {
     bronze: medals.filter(m => m.medal_type === 'bronze').length,
   }
 
-  const framesData = work.frames_data as { frames: unknown[]; fps: number; width: number; height: number } | null
+  const framesData = work.canvas_data as { frames: unknown[]; fps: number; width: number; height: number } | null
 
   return (
     <div className="min-h-screen bg-background">

@@ -60,7 +60,7 @@ export default function ThemesPage() {
         .from('works')
         .select('*, profile:profiles(*)')
         .eq('daily_theme_id', theme.id)
-        .eq('is_published', true)
+        .eq('is_public', true)
         .order('likes_count', { ascending: false })
       setThemeWorks(works as Work[] || [])
     }

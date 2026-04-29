@@ -26,7 +26,7 @@ export async function fetchFeedPage(
   let query = supabase
     .from('works')
     .select('*, profile:profiles(*)')
-    .eq('is_published', true)
+    .eq('is_public', true)
 
   if (filter === 'popular') {
     query = query.order('likes_count', { ascending: false })
@@ -55,7 +55,7 @@ export async function fetchCategoryPage(
   let query = supabase
     .from('works')
     .select('*, profile:profiles(*)')
-    .eq('is_published', true)
+    .eq('is_public', true)
     .eq('category', category)
 
   if (typeFilter !== 'all') query = query.eq('type', typeFilter as WorkType)
@@ -88,7 +88,7 @@ export async function fetchProfileData([, userId]: [string, string]) {
       .from('works')
       .select('*, profile:profiles(*)')
       .eq('user_id', userId)
-      .eq('is_published', true)
+      .eq('is_public', true)
       .order('created_at', { ascending: false })
       .limit(50),
     supabase

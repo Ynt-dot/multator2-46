@@ -40,7 +40,7 @@ export default function ModerationPage() {
     const { data } = await supabase
       .from('works')
       .select('*, profile:profiles(*)')
-      .eq('is_published', true)
+      .eq('is_public', true)
       .eq('category', 'sandbox')
       .order('created_at', { ascending: false })
       .range(from, from + PAGE_SIZE - 1)
@@ -90,7 +90,7 @@ export default function ModerationPage() {
   const removeWork = async (workId: string) => {
     if (!confirm(locale === 'ru' ? 'РЎРєСЂС‹С‚СЊ СЂР°Р±РѕС‚Сѓ Р·Р° РЅР°СЂСѓС€РµРЅРёРµ РїСЂР°РІРёР»?' : 'Hide work for rule violation?')) return
     const supabase = createClient()
-    await supabase.from('works').update({ is_published: false }).eq('id', workId)
+    await supabase.from('works').update({ is_public: false }).eq('id', workId)
 
     // Give gold to moderator
     await supabase.from('gold_transactions').insert({
