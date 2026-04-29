@@ -92,15 +92,15 @@ describe('publishWork — база данных', () => {
     expect(result).toEqual({ success: true, id: 'work-1' })
   })
 
-  it('вставляет корректные поля включая user_id и is_published', async () => {
+  it('вставляет корректные поля включая user_id и is_public', async () => {
     await publishWork({ ...VALID, type: 'drawing', category: 'oldschool' })
     expect(mockFrom).toHaveBeenCalledWith('works')
     expect(mockInsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        user_id:      'user-1',
-        type:         'drawing',
-        category:     'oldschool',
-        is_published: true,
+        user_id:     'user-1',
+        type:        'drawing',
+        category:    'oldschool',
+        is_public:   true,
       }),
     )
   })

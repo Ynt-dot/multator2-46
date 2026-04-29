@@ -33,15 +33,14 @@ export interface Work {
   type: WorkType
   category: WorkCategory
   thumbnail_url: string | null
-  content_url: string
-  frames_data: Record<string, unknown> | null
-  is_published: boolean
+  canvas_data: Record<string, unknown> | null
+  frames_count: number
+  is_public: boolean
   is_featured: boolean
   likes_count: number
   comments_count: number
   views_count: number
   daily_theme_id: string | null
-  sound_url: string | null
   created_at: string
   updated_at: string
   // Joined data
