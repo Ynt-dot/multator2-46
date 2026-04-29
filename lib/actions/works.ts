@@ -33,8 +33,8 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
         description: parsed.data.description ?? null,
         type: parsed.data.type,
         category: parsed.data.category,
-        frames_data: parsed.data.frames_data,
-        is_published: true,
+        canvas_data: parsed.data.frames_data,
+        is_public: true,
       })
       .select('id')
       .single()
