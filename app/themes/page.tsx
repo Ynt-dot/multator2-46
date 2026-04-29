@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -74,7 +74,7 @@ export default function ThemesPage() {
 
     const cost = GOLD_COSTS.SUGGEST_THEME
     if (profile.gold < cost) {
-      toast.error(locale === 'ru' ? `РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ Р·РѕР»РѕС‚Р°. РќСѓР¶РЅРѕ ${cost}вњ¦` : `Not enough gold. Need ${cost}вњ¦`)
+      toast.error(locale === 'ru' ? `Недостаточно золота. Нужно ${cost}✦` : `Not enough gold. Need ${cost}✦`)
       return
     }
 
@@ -95,7 +95,7 @@ export default function ThemesPage() {
     })
 
     if (themeError) {
-      toast.error(locale === 'ru' ? 'РћС€РёР±РєР° вЂ” СЌС‚Р° РґР°С‚Р° СѓР¶Рµ Р·Р°РЅСЏС‚Р°' : 'Error вЂ” this date is taken')
+      toast.error(locale === 'ru' ? 'Ошибка — эта дата уже занята' : 'Error — this date is taken')
       setSuggesting(false)
       return
     }
@@ -105,10 +105,10 @@ export default function ThemesPage() {
       user_id: user.id,
       amount: -cost,
       type: 'theme_suggest',
-      description: `РџСЂРµРґР»РѕР¶РµРЅР° С‚РµРјР°: ${suggestTitle}`,
+      description: `Предложена тема: ${suggestTitle}`,
     })
 
-    toast.success(locale === 'ru' ? `РўРµРјР° РїСЂРµРґР»РѕР¶РµРЅР°! -${cost}вњ¦` : `Theme suggested! -${cost}вњ¦`)
+    toast.success(locale === 'ru' ? `Тема предложена! -${cost}✦` : `Theme suggested! -${cost}✦`)
     setSuggestTitle('')
     setSuggestDesc('')
     setShowSuggestDialog(false)
@@ -137,13 +137,13 @@ export default function ThemesPage() {
             <div className="flex items-center gap-3">
               <Palette className="h-7 w-7 text-primary" />
               <h1 className="text-2xl font-bold">
-                {locale === 'ru' ? 'РўРµРјР° РґРЅСЏ' : 'Theme of the Day'}
+                {locale === 'ru' ? 'Тема дня' : 'Theme of the Day'}
               </h1>
             </div>
             {user && (
               <Button onClick={() => setShowSuggestDialog(true)} variant="outline">
                 <Plus className="h-4 w-4 mr-2" />
-                {locale === 'ru' ? 'РџСЂРµРґР»РѕР¶РёС‚СЊ С‚РµРјСѓ' : 'Suggest theme'}
+                {locale === 'ru' ? 'Предложить тему' : 'Suggest theme'}
                 <span className="ml-2 text-yellow-600 flex items-center gap-1">
                   <Coins className="h-3 w-3" />
                   {GOLD_COSTS.SUGGEST_THEME}
@@ -158,7 +158,7 @@ export default function ThemesPage() {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
-                    <Badge className="mb-2">{locale === 'ru' ? 'РЎРµРіРѕРґРЅСЏ' : 'Today'}</Badge>
+                    <Badge className="mb-2">{locale === 'ru' ? 'Сегодня' : 'Today'}</Badge>
                     <CardTitle className="text-2xl">{todayTheme.title}</CardTitle>
                     {todayTheme.description && (
                       <p className="text-muted-foreground mt-2">{todayTheme.description}</p>
@@ -173,7 +173,7 @@ export default function ThemesPage() {
               <CardContent>
                 <Button asChild>
                   <Link href={`/editor?theme=${todayTheme.id}`}>
-                    {locale === 'ru' ? 'РќР°СЂРёСЃРѕРІР°С‚СЊ РЅР° С‚РµРјСѓ' : 'Draw on this theme'}
+                    {locale === 'ru' ? 'Нарисовать на тему' : 'Draw on this theme'}
                   </Link>
                 </Button>
               </CardContent>
@@ -182,10 +182,10 @@ export default function ThemesPage() {
             <Card className="mb-8">
               <CardContent className="text-center py-8 text-muted-foreground">
                 <Palette className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>{locale === 'ru' ? 'РЎРµРіРѕРґРЅСЏ РЅРµС‚ С‚РµРјС‹ РґРЅСЏ' : 'No theme for today'}</p>
+                <p>{locale === 'ru' ? 'Сегодня нет темы дня' : 'No theme for today'}</p>
                 {user && (
                   <Button className="mt-4" onClick={() => setShowSuggestDialog(true)}>
-                    {locale === 'ru' ? 'РџСЂРµРґР»РѕР¶РёС‚СЊ С‚РµРјСѓ' : 'Suggest a theme'}
+                    {locale === 'ru' ? 'Предложить тему' : 'Suggest a theme'}
                   </Button>
                 )}
               </CardContent>
@@ -196,12 +196,12 @@ export default function ThemesPage() {
           {todayTheme && (
             <div className="mb-8">
               <h2 className="text-xl font-bold mb-4">
-                {locale === 'ru' ? 'Р Р°Р±РѕС‚С‹ РЅР° С‚РµРјСѓ РґРЅСЏ' : 'Works on today\'s theme'}
+                {locale === 'ru' ? 'Работы на тему дня' : "Works on today's theme"}
                 <span className="text-muted-foreground font-normal text-base ml-2">({themeWorks.length})</span>
               </h2>
               <WorkGrid
                 works={themeWorks}
-                emptyMessage={locale === 'ru' ? 'Р‘СѓРґСЊ РїРµСЂРІС‹Рј, РєС‚Рѕ РЅР°СЂРёСЃСѓРµС‚ РЅР° СЌС‚Сѓ С‚РµРјСѓ!' : 'Be the first to draw on this theme!'}
+                emptyMessage={locale === 'ru' ? 'Будь первым, кто нарисует на эту тему!' : 'Be the first to draw on this theme!'}
               />
             </div>
           )}
@@ -210,7 +210,7 @@ export default function ThemesPage() {
           {pastThemes.length > 0 && (
             <div>
               <h2 className="text-xl font-bold mb-4">
-                {locale === 'ru' ? 'РџСЂРѕС€Р»С‹Рµ С‚РµРјС‹' : 'Past themes'}
+                {locale === 'ru' ? 'Прошлые темы' : 'Past themes'}
               </h2>
               <div className="space-y-2">
                 {pastThemes.map(theme => (
@@ -239,26 +239,26 @@ export default function ThemesPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {locale === 'ru' ? 'РџСЂРµРґР»РѕР¶РёС‚СЊ С‚РµРјСѓ РґРЅСЏ' : 'Suggest a theme'}
+              {locale === 'ru' ? 'Предложить тему дня' : 'Suggest a theme'}
             </DialogTitle>
           </DialogHeader>
           <FieldGroup>
             <p className="text-sm text-muted-foreground">
               {locale === 'ru'
-                ? `РЎС‚РѕРёРјРѕСЃС‚СЊ: ${GOLD_COSTS.SUGGEST_THEME}вњ¦. РўРµРјР° РїРѕСЏРІРёС‚СЃСЏ РЅР° СЃР»РµРґСѓСЋС‰РёР№ РґРµРЅСЊ.`
-                : `Cost: ${GOLD_COSTS.SUGGEST_THEME}вњ¦. Theme will appear the next day.`}
+                ? `Стоимость: ${GOLD_COSTS.SUGGEST_THEME}✦. Тема появится на следующий день.`
+                : `Cost: ${GOLD_COSTS.SUGGEST_THEME}✦. Theme will appear the next day.`}
             </p>
             <Field>
-              <FieldLabel>{locale === 'ru' ? 'РўРµРјР°' : 'Theme'}</FieldLabel>
+              <FieldLabel>{locale === 'ru' ? 'Тема' : 'Theme'}</FieldLabel>
               <Input
                 value={suggestTitle}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSuggestTitle(e.target.value)}
-                placeholder={locale === 'ru' ? 'РќР°РїСЂРёРјРµСЂ: Р±РµР»РєР° РµСЃС‚ РѕСЂРµС…Рё' : 'E.g. squirrel eating nuts'}
+                placeholder={locale === 'ru' ? 'Например: белка ест орехи' : 'E.g. squirrel eating nuts'}
                 maxLength={100}
               />
             </Field>
             <Field>
-              <FieldLabel>{locale === 'ru' ? 'РћРїРёСЃР°РЅРёРµ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)' : 'Description (optional)'}</FieldLabel>
+              <FieldLabel>{locale === 'ru' ? 'Описание (необязательно)' : 'Description (optional)'}</FieldLabel>
               <Textarea
                 value={suggestDesc}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSuggestDesc(e.target.value)}
@@ -269,11 +269,11 @@ export default function ThemesPage() {
           </FieldGroup>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSuggestDialog(false)}>
-              {locale === 'ru' ? 'РћС‚РјРµРЅР°' : 'Cancel'}
+              {locale === 'ru' ? 'Отмена' : 'Cancel'}
             </Button>
             <Button onClick={handleSuggestTheme} disabled={suggesting || !suggestTitle.trim()}>
               {suggesting && <Spinner className="mr-2" />}
-              {locale === 'ru' ? `РџСЂРµРґР»РѕР¶РёС‚СЊ (-${GOLD_COSTS.SUGGEST_THEME}вњ¦)` : `Suggest (-${GOLD_COSTS.SUGGEST_THEME}вњ¦)`}
+              {locale === 'ru' ? `Предложить (-${GOLD_COSTS.SUGGEST_THEME}✦)` : `Suggest (-${GOLD_COSTS.SUGGEST_THEME}✦)`}
             </Button>
           </DialogFooter>
         </DialogContent>
