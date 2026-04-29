@@ -34,7 +34,6 @@ export async function publishWork(data: unknown): Promise<PublishWorkResult> {
         type: parsed.data.type,
         category: parsed.data.category,
         frames_data: parsed.data.frames_data,
-        content_url: '',
         is_published: true,
       })
       .select('id')
